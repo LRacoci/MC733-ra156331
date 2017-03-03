@@ -9,14 +9,7 @@ Usando apenas o comando:
 ```bash
 time gcc primo.c -o primo
 ´´´
-
-obtem-se a resposta:
-
-```
-real	0m0.081s
-user	0m0.034s
-sys		0m0.018s
-´´´
+obtem-se 0.018s
 
 
 
