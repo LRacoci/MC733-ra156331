@@ -2,16 +2,14 @@
 
 ## Exercício 1
 
-#Anotações (Rascunho):
+###Anotações (Rascunho):
 
 Usando apenas o comando:
 
 ```bash
 time gcc primo.c -o primo
-´´´
-obtem-se 0.018s
-
-
+```
+obtem-se um tempo real de 0.081s.
 
 	
 
