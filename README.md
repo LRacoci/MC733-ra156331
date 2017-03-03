@@ -18,3 +18,6 @@ Usando agora as flags -O0, -O1, O2 e -O3 obtem-se, respectivamente, _5.376_ s, _
 
 Usando a flag ```-mtune=native``` obteve-se _5.266_ s
 
+Separando o arquivo e usando a otimização ```-mtune=native```, obteve-se _5.294_s, ou seja, o tempo piorou possivelmente porque fica mais dificil otimizar os arquivos separados.
+
+

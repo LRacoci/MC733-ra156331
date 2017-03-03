@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <limits.h>
-
 int primo(int n)
 {
   int i;
@@ -12,12 +9,3 @@ int primo(int n)
   return 1;
 }
 
-int main()
-{
-  int n = INT_MAX;
-
-  if (primo(n))
-    printf("%d é primo.\n", n);
-  else
-    printf("%d não é primo.\n", n);
-}
