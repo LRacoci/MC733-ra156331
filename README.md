@@ -4,34 +4,10 @@
 
 ###Anotações (Rascunho):
 
-Usando apenas o comando:
 
+Rodando apenas os comandos, sem flags:
 ```bash
-time gcc primo.c -o primo
+gcc primo.c -o primo
+time ./primo
 ```
-obtem-se um tempo real de 0.081s.
-
-	
-
-
-Como especificar as otimizações que um compilador deve utilizar num programa?
-
-Quais otimizações são importantes para o processador que você está utilizando?
-
-Qual a diferença entre um Makefile e um script?
-O que é "depurar um programa"?
-
-Como executar o GDB?
-
-Como utilizar um ambiente gráfico com o GDB?
-
-Como descobrir a parte que é mais executada de um programa?
-
-Como utilizar o gprof?
-
-Como fazer com que um programa tire proveito de multiprocessamento de forma escalável?
-
-
-Nome: 	Lucas Alves Racoci
-RA: 	156331
-
+obtem-se como tempos reais de 250 a 360 ms, ou seja, há uma grande variação por fatores aleatórios. Para obter melhor precisão decidiu-se aumentar o inteiro n no código ```primo.c```. Para isso usou-se o INT_MAX da biblioteca ```limits.h```

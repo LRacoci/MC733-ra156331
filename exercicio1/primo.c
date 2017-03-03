@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <limits.h>
 
 int primo(int n)
 {
@@ -13,7 +14,7 @@ int primo(int n)
 
 int main()
 {
-  int n = 104395301;
+  int n = INT_MAX;
 
   if (primo(n))
     printf("%d é primo.\n", n);
