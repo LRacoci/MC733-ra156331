@@ -2,7 +2,7 @@
 
 ## Exercício 1
 
-###Anotações (Rascunho):
+### Anotações (Rascunho):
 
 
 Rodando apenas os comandos, sem flags:
@@ -19,5 +19,45 @@ Usando agora as flags -O0, -O1, O2 e -O3 obtem-se, respectivamente, _5.376_ s, _
 Usando a flag ```-mtune=native``` obteve-se _5.266_ s
 
 Separando o arquivo e usando a otimização ```-mtune=native```, obteve-se _5.294_s, ou seja, o tempo piorou possivelmente porque fica mais dificil otimizar os arquivos separados.
+
+Modificando a função main para que conte quantos primos ha até n temos:
+
+```c
+int main(int argc, char* argv[])
+{
+  int n = atoi(argv[1]);
+  int p = 0;
+  int i;
+
+  if(argc != 2){
+  	return 1;
+  }
+
+  for(i = 2; i <= n; i++){
+  	if(primo(i)){
+  		p++;		
+  	}
+  }
+
+  if(p > 0){
+  	printf("Há %d primos até %d\n",p, n);
+  }
+
+  if (primo(n) && n > 1)
+    printf("%d é primo.\n", n);
+  else
+    printf("%d não é primo.\n", n);
+}
+```
+Rodando:
+```bash
+time ./main 1000000
+```
+... obtem-se que "Há 78498 primos até 1000000" em um tempo real de _1_min e _31.854_seg
+
+
+
+
+
 
 
