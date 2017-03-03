@@ -49,11 +49,13 @@ int main(int argc, char* argv[])
     printf("%d não é primo.\n", n);
 }
 ```
-Rodando:
+Rodando com a otimização ```-mtune=native```:
 ```bash
 time ./main 1000000
 ```
-... obtem-se que "Há 78498 primos até 1000000" em um tempo real de _1_min e _31.854_seg
+... obtem-se que "Há 78498 primos até 1000000" em um tempo real de _1_ min e _31.854_ seg. Rodando o mesmo comando no codigo junto, obtemos _1_ min e _32.326_ s, ou seja, a performance parece ter piorado neste caso, apesar de a diferença ser pequena. Uma possível explicação seria o fato de este código exigir muito mais otimização na função main, a ponto de qualquer ganho que poderia ter acontecido na otimização ao se juntar os dois codigos ser suplantado pelo custo de otimizar o loop na main, que roda muito mais vezes.
+
+
 
 
 
