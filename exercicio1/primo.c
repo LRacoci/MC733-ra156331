@@ -11,7 +11,7 @@ int primo(int n)
   return 1;
 }
 
-main()
+int main()
 {
   int n = 104395301;
 
