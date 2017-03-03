@@ -53,7 +53,27 @@ Rodando com a otimização ```-mtune=native```:
 ```bash
 time ./main 1000000
 ```
-... obtem-se que "Há 78498 primos até 1000000" em um tempo real de _1_ min e _31.854_ seg. Rodando o mesmo comando no codigo junto, obtemos _1_ min e _32.326_ s, ou seja, a performance parece ter piorado neste caso, apesar de a diferença ser pequena. Uma possível explicação seria o fato de este código exigir muito mais otimização na função main, a ponto de qualquer ganho que poderia ter acontecido na otimização ao se juntar os dois codigos ser suplantado pelo custo de otimizar o loop na main, que roda muito mais vezes.
+... obtem-se que "Há 78498 primos até 1000000" em um tempo real de _1_ min e _31.854_ seg. Rodando o mesmo comando com os dois códigos juntos, obtem-se _1_ min e _32.326_ s, ou seja, a performance parece ter piorado neste caso, apesar de a diferença ser pequena. Uma possível explicação seria o fato de este código exigir muito mais otimização na função main, a ponto de qualquer ganho que poderia ter acontecido na otimização ao se juntar os dois codigos ser suplantado pelo custo de otimizar o loop na main.
+
+Ao otimizar a função primo como pedido no enunciado do exercício:
+```c
+int primo(int n)
+{
+  int i;
+  if(2 < n && n % 2 == 0) 
+    return 0;
+  for(i = 3; i < n; i += 2)
+    if (n % i == 0) 
+      return 0;
+
+  return 1;
+}
+```
+Como esperado, o tempo de execução real cai para _46.211 s_, aproximadamete metade do tempo que demorava antes.
+
+
+
+
 
 
 
