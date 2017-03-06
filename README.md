@@ -18,7 +18,7 @@ Usando agora as flags -O0, -O1, O2 e -O3 obtem-se, respectivamente, _5.376_ s, _
 
 Usando a flag ```-mtune=native``` obteve-se _5.266_ s
 
-Separando o arquivo e usando a otimização ```-mtune=native```, obteve-se _5.294_s, ou seja, o tempo piorou possivelmente porque fica mais dificil otimizar os arquivos separados.
+Separando o arquivo e usando a otimização ```-mtune=native```, obteve-se _5.294_ s, ou seja, o tempo piorou possivelmente porque fica mais dificil otimizar os arquivos separados, mas considerando um erro de 5% por fatores aleatórios pode-se considerar que não houve diferença significativa.
 
 Modificando a função main para que conte quantos primos ha até n temos:
 
@@ -68,9 +68,9 @@ int primo(int n)
 
 	return 1;
 }
-```
-Como esperado, o tempo de execução real cai para _46.211 s_, aproximadamete metade do tempo que demorava antes. Usando o gproof também obteveram-se tempos muito próximos tanto para a versão separada do codigo quanto para a versão junta.
-
+```	
+Como esperado, o tempo de execução real cai para _46.211 s_, aproximadamete metade do tempo que demorava antes. Usando o gproof também obtiveram-se tempos muito próximos tanto para a versão separada do codigo quanto para a versão junta.
+	
 Em ambas as versões do código modificou-se a função procurou-se paralelizar os loops da função ```main```, como pode ser visto a seguir:
 ```c
 #pragma omp parallel for reduction (+:p)
