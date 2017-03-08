@@ -15,23 +15,25 @@ void pv(const char name[], Nat *v, Nat n){
 }
 
 Nat p(Nat n){
-	
 	bool primo;
-	unsigned h[1];
-	Nat *p;
+	unsigned h0 = 0;
+	Nat *p, p_n;
 
 	p = malloc(((n>2)?n:2)*sizeof(Nat));
 	p[0] = 2;
 	p[1] = 3;
 	p[2] = 5;
-	h[0] = 0;
+
 	for(unsigned k = 3; k < n; k++){
 		p[k] = p[k-1];
-		primo = false;
-		while(!primo){
-			h[0] = !h[0];
-			p[k] += (h[0]? 2 : 4);
+		#pragma omp parallell for
+		for(primo = false; !primo; ){
+			h0++;
+			h0&=1;
+			p[k] += (h0? 2 : 4);
 			primo = true;
+			
+			#pragma omp parallell for
 			for(unsigned i = 0; p[i]*p[i] <= p[k] && primo; i++){
 				primo = primo && (p[k] % p[i] != 0);
 			}
@@ -40,11 +42,13 @@ Nat p(Nat n){
 		}
 	}
 	//pv("p", p, n);
-
+	p_n = p[n-1];
 	free(p);
+	return p_n;
 }
 
 int main(int argc, char* argv[]){
+	Nat n;
 	char *endptr, *str;
 	int base;
 
