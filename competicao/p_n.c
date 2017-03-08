@@ -18,13 +18,15 @@ Nat p(Nat n){
 	
 	bool primo;
 	unsigned h[1];
-	Nat *p;
+	Nat *p, p_n;
 
 	p = malloc(((n>2)?n:2)*sizeof(Nat));
 	p[0] = 2;
 	p[1] = 3;
 	p[2] = 5;
 	h[0] = 0;
+	
+	#pragma omp parallell for 
 	for(unsigned k = 3; k < n; k++){
 		p[k] = p[k-1];
 		primo = false;
@@ -40,13 +42,15 @@ Nat p(Nat n){
 		}
 	}
 	//pv("p", p, n);
-
+	p_n = p[n];
 	free(p);
+	return p_n;
 }
 
 int main(int argc, char* argv[]){
 	char *endptr, *str;
 	int base;
+	Nat n;
 
 	str = argv[1];
 	
