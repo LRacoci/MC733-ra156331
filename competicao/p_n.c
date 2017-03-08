@@ -14,26 +14,12 @@ void pv(const char name[], Nat *v, Nat n){
 
 }
 
-
-int main(int argc, char* argv[]){
-	Nat n;
+Nat p(Nat n){
+	
 	bool primo;
 	unsigned h[1];
 	Nat *p;
 
-	char *endptr, *str;
-	int base;
-
-
-	
-	str = argv[1];
-	
-	base = (argc > 2) ? atoi(argv[2]) : 10;
-	
-	n = strtoull(str, &endptr, base);
-
-	n--;
-	
 	p = malloc(((n>2)?n:2)*sizeof(Nat));
 	p[0] = 2;
 	p[1] = 3;
@@ -43,7 +29,7 @@ int main(int argc, char* argv[]){
 		p[k] = p[k-1];
 		primo = false;
 		while(!primo){
-			h[0] = (h[0]+1)%2;
+			h[0] = !h[0];
 			p[k] += (h[0]? 2 : 4);
 			primo = true;
 			for(unsigned i = 0; p[i]*p[i] <= p[k] && primo; i++){
@@ -54,8 +40,22 @@ int main(int argc, char* argv[]){
 		}
 	}
 	//pv("p", p, n);
-	printf("p[%llu] = %llu\n",(n+1),p[n]);
 
 	free(p);
+}
+
+int main(int argc, char* argv[]){
+	char *endptr, *str;
+	int base;
+
+	str = argv[1];
+	
+	base = (argc > 2) ? atoi(argv[2]) : 10;
+	
+	n = strtoull(str, &endptr, base);
+
+	printf("p(%llu)= %llu\n",n,p(n));
+
+	
 	return 0;
 }
