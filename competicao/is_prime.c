@@ -47,43 +47,15 @@ Nat* pList(Nat n){
 }
 
 
-Nat mulmod_old(Nat a, Nat b, Nat mod)
-{
-	Nat x = 0,y = a % mod;
-	while (b > 0)
-	{
-		if (b % 2 == 1)
-		{    
-			x = (x + y) % mod;
-		}
-		y = (y * 2) % mod;
-		b /= 2;
-	}
-	return x % mod;
-}
-
-Nat mulmod_new(Nat x, Nat y, Nat n){
-	size_t  hs = sizeof(Nat)<<2; // half_size
-	// x = lx + hx*2**hs, y = ly + hy*2**hs
-	//Nat lx = (x<<hs)>>hs, ux = x>>(hs), ly = (y<<hs)>>hs, uy = y>>(hs);
-	Nat lx = x&0x00000000ffffffffull, ux = x>>(hs), ly = y&0x00000000ffffffffull, uy = y>>(hs);
-	// lx*ly + (lx*uy + ly*ux)*2**hs + (ux*uy)*2**(2*hs)
-	return ((lx*ly)%n+((((lx*uy)%n+(ly*ux)%n)%n+((ux*uy)%n*(1ull<<hs)%n)%n)*(1ull<<hs)%n)%n)%n;
-}
-
 // return (x*y)%n preventing overflow
 Nat mulmod(Nat x, Nat y, Nat n){
-	//Nat new = mulmod_new(x,y,n);
-	Nat old = mulmod_old(x,y,n);
-	/*
-	if(new != old){
-		printf("x = %llu\n", x);
-		printf("y = %llu\n", y);
-		printf("n = %llu\n", n);
-		printf("# old == %llu != %llu == new\n", old, new);
-	}
-	*/
-	return old;
+	Nat x = 0, y = a % n;
+	while (b){
+		if (b & 1)    
+			x = (x + y) % n;
+		y = (y << 1) %n; 
+		b >>= 1;
+	}return x % n;
 }
 
 // return (b**e)%n
@@ -91,11 +63,11 @@ Nat expmod(Nat b, Nat e, Nat n)
 {
 	Nat resp = 1;
 	b %= n;
-	while (e > 0){
-		if (e % 2 == 1)
+	while (e){
+		if (e & 1)
 			resp = mulmod(resp, b, n);
 		b = mulmod(b, b, n);
-		e /= 2;
+		e >>= 1;
 	}
 	return resp % n;
 }
@@ -145,18 +117,20 @@ bool is_prime(Nat num){
 
 
 int main(int argc, char* argv[]){
-	Nat n, *p;
+	Nat n;//, *p;
 	char *endptr, *str;
 
 	str = argv[1];
 	
 	n = strtoull(str, &endptr, 10);
-
+	//printf("%s\n", is_prime(n)? "Primo":"Composto");
+	/*
 	p = pList(n);
 
 	printf("p(%llu)= %llu\n",n,p[n-1]);
 
 	Nat erros = 0;
+	
 	for(Nat i = 0; i < n-1; i++){
 		if(!is_prime(p[i])){
 			printf("%llu deu composto\n", p[i]);
@@ -168,6 +142,6 @@ int main(int argc, char* argv[]){
 		}
 	}
 	printf("%llu erros\n", erros);
-	
+	*/
 	return 0;
 }
