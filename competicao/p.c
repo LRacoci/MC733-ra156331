@@ -29,7 +29,7 @@ Nat p(Nat n){
 	p[1] = 3;
 	p[2] = 5;
 	
-	//#pragma omp parallell for
+	//#pragma omp parallel for
 	for(unsigned k = 3; k < n; k++){
 		p[k] = p[k-1];
 		primo = false;

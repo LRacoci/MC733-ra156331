@@ -1,0 +1,5 @@
+all:
+	gcc p.c -o p -mtune=native -lm -g #-fopenmp
+
+clean:
+	rm p
