@@ -40,7 +40,7 @@ Nat p(Nat n){
 	for(unsigned k = 4; k < pp; k++){
 		p[k] = p[k-1];
 		primo = false;
-		for(;!primo; h0++){
+		for(h0 = (p[k]%6 == 1)? 0:1; !primo; h0++){
 			p[k] += (h0&1 ? 2 : 4);
 			primo = true;
 			Nat sqrtpk = sqrt(p[k]);
