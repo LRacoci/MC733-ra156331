@@ -8,6 +8,16 @@
 
 ## Fórmula de Cálculo
 
+### Organização dos Dados
+
+### Primeira Visualização
+
+### Ajustes Gerais
+
+### Ajustes Finos
+
 ### Consistência das Medições
+
+### Considerações de Outros Critérios
 
 ### Critérios para Uso
