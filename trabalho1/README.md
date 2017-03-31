@@ -142,7 +142,7 @@ Mas percebeu-se que certas fórmulas faziam classificações reversas e simplesm
 
 Só por este gráfico já é possível perceber que qualquer classificação que venha a ser fornecida por este métodos não será boa o bastante.
 
-Para resolver este problema todas as fórulas de bencharks foram alteradas para o mesmo padrão de sempre obter a média geométrica das razões entre o desempenho de uma dada máquina e a máquina base de cada benchmark. Para manter manter um pouco das decisões tomadas pelos grupos na Primeira Parte, a média geométrica foi ponderada pelos pesos que já se mostravam claramente nas fórmulas anteriores. Onde os pesos não estavam claros ou onde a fórmula era muito diferente, todos os critérios avaliados foram considerados com o mesmo peso.
+Para resolver este problema todas as fórmulas de bencharks foram alteradas para o mesmo padrão de sempre obter a média geométrica das razões entre o desempenho de uma dada máquina e a máquina base de cada benchmark. Para manter um pouco das decisões tomadas pelos grupos na Primeira Parte, a média geométrica foi ponderada pelos pesos que já se mostravam claramente nas fórmulas anteriores. Onde os pesos não estavam claros ou onde a fórmula era muito diferente, todos os critérios avaliados foram considerados com o mesmo peso.
 
 A partir deste método obtiveram-se os gráficos a seguir:
 
@@ -152,7 +152,7 @@ A partir deste método obtiveram-se os gráficos a seguir:
 
 ![alt text](3-3.png "Gráfico 3.3")
 
-Considerando este método já mais razoável, para obter a pontuação final de cada máquina, fez-se uma média geométrica ponderada da pontuação obtida em cada benchmark e com peso proporcional a quantas medidas foram feitas naquele benchmark, obtendo uma distribuição de pontuação que pode ser visualizada pelo seguinte histograma e pelo seguinte perfil:
+Considerando este método já mais razoável, isto é, com menos incoerências se comparado ao anterior, para obter a pontuação final de cada máquina, fez-se uma média geométrica ponderada da pontuação obtida em cada benchmark e com peso proporcional a quantas medidas foram feitas naquele benchmark, obtendo uma distribuição de pontuação que pode ser visualizada pelo seguinte histograma e pelo seguinte perfil:
 
 ![alt text](HistGeom.png "Histograma")
 
@@ -172,4 +172,4 @@ Dessa forma o novo ranking obtido foi: C20,C54,C19,C27,C16,C28,C34,C06,C35,C15,C
 
 ### Consistência das Medições
 
-Considerando os computadores testados na parte 2, que são 4, 7, 13, 39, 20, 15, 7, a ordem de rankeamento obtida foi: C20 C15 C07 C04 C39 C13 do melhor para o pior. Isso parece refletir bem as características de cada máquina testada, exceto talvez a ordem entre C20 e C15 que poderia ser trocada. Mas estas diferenças podem ser explicadas por fatores aleatórios ou pela concorrência de processos nas máquinas onde os benchmarks foram execultados
+Considerando os computadores testados na parte 2, que são 4, 7, 13, 15, 20 e 39, a ordem de rankeamento obtida foi: C20 C15 C07 C04 C39 C13 do melhor para o pior. Isso parece refletir bem as características de cada máquina testada, exceto talvez a ordem entre C20 e C15 que poderia ser trocada. Mas estas diferenças podem ser explicadas por fatores aleatórios ou pela concorrência de processos nas máquinas onde os benchmarks foram executados.
