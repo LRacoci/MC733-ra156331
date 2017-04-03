@@ -22,6 +22,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.mplot3d import Axes3D
+import scipy.stats.mstats as stats
 
 def plotMatrixMap(data, mask, name):
 	data[~mask] = nan
@@ -167,16 +168,15 @@ def normalize2(data, mask):
 	(nC, nB) = mask.shape
 	handled = full(shape = (nB), fill_value = False, dtype = np.bool)
 	print("Começa a normalizar: \n\n")
-	print(data)
-	print(mask)
-	for i in range(0,nC):
+	for c in range(0,nC):
 		if(all(handled)):
 			break
+		factor = stats.gmean(data[c, handled]) if any(handled) else 1
 		print(" Handled: ", handled)
-		handle = mask[i,:] & ~handled
+		handle = mask[c,:] & ~handled
 		print("Handling: ", handle)
 		if(any(handle)):
-			data[:,handle] /= kron(data[i,handle], ones((nC, 1)))
+			data[:,handle] *= kron(factor/data[c,handle], ones((nC, 1)))
 			handled = handled | handle
 			
 
@@ -237,9 +237,12 @@ def rank(data):
 	gotten = gotten[order,:]
 	
 	print("Tabela Reordenada")
-	print(scores)
 
-	data, mask = normalize2(scores, gotten)
+	print(scores)
+	print(gotten)
+
+	# Here, the normalization occurs
+	scores, gotten = normalize2(scores, gotten)
 	
 
 	print(order)
@@ -254,6 +257,7 @@ def rank(data):
 	
 	scores = scores[order,:]
 	gotten = gotten[order,:]
+	
 	plotScater2d1(scores, gotten, "Scores X Benchmarks X Máquinas")
 	plotScater2d2(scores, gotten, "Scores X Máquinas X Benchmarks")
 	plotScater3d(scores, gotten, "Scores X Benchmarks X Máquinas")
@@ -323,7 +327,7 @@ def main():
 	"""Shows basic usage of the Sheets API.
 
 	Creates a Sheets API service object and prints some info:
-	https://docs.google.com/spreadsheets/d/1P6BALBoYm3LY91y-oUxEYFwfaaxNGRry66Kw0r58huU/edit
+	https://docs.google.com/spreadsheets/d/1bHE_ILLOjKkYOd6otzc_2iIkMJ4Uw27h8d58YBZLLO4/edit
 	"""
 	credentials = get_credentials()
 	http = credentials.authorize(httplib2.Http())
@@ -332,7 +336,7 @@ def main():
 	service = discovery.build('sheets', 'v4', http=http,
 							  discoveryServiceUrl=discoveryUrl)
 
-	spreadsheetId = '1P6BALBoYm3LY91y-oUxEYFwfaaxNGRry66Kw0r58huU'
+	spreadsheetId = '1bHE_ILLOjKkYOd6otzc_2iIkMJ4Uw27h8d58YBZLLO4'
 	rangeName = 'Medidas Completas!A:C'
 	result = service.spreadsheets().values().get(
 		spreadsheetId=spreadsheetId, range=rangeName).execute()

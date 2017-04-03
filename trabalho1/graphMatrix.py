@@ -22,6 +22,7 @@ from numpy import *
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.mplot3d import Axes3D
+import scipy.stats.mstats as stats
 
 def plotMatrixMap(data, mask, name):
 	data[~mask] = nan
@@ -167,16 +168,15 @@ def normalize2(data, mask):
 	(nC, nB) = mask.shape
 	handled = full(shape = (nB), fill_value = False, dtype = np.bool)
 	print("Começa a normalizar: \n\n")
-	print(data)
-	print(mask)
-	for i in range(0,nC):
+	for c in range(0,nC):
 		if(all(handled)):
 			break
+		factor = stats.gmean(data[c, handled]) if any(handled) else 1
 		print(" Handled: ", handled)
-		handle = mask[i,:] & ~handled
+		handle = mask[c,:] & ~handled
 		print("Handling: ", handle)
 		if(any(handle)):
-			data[:,handle] /= kron(data[i,handle], ones((nC, 1)))
+			data[:,handle] *= kron(factor/data[c,handle], ones((nC, 1)))
 			handled = handled | handle
 			
 
@@ -184,104 +184,40 @@ def normalize2(data, mask):
 
 	print(data)
 
-def rank(data):
-	arr = array(data[1:])
-	'''
-	struct = [('bench', 'u4'), ('maqui', 'u4'), ('score', 'f8')]
-	mat = empty(arr.shape[0], dtype = struct)
-	mat = rec.array(mat)
-	mat['maqui'] = uint32(arr[:,0])
-	mat['bench'] = uint32(arr[:,1])
-	mat['score'] = float64(arr[:,2])
-	'''
-
-	indices = uint32(arr[:,:2])
-	#print(indices)
-	(nC, nB) = amax(indices, axis = 0)
-
+def plotMatrix(data):
+	print(data[0][0])
+	arr = array(data)
+	print(data)
+	nC = len(data)
+	nB = 13
+	print(nC, nB)
 	scores = empty(shape = (nC, nB), dtype = float64)
-	gotten = full(shape = (nC, nB), fill_value = False, dtype = np.bool)
-	
-	for k in range(len(arr)):
-		scores[uint32(arr[k,0])-1, uint32(arr[k,1])-1] = float64(arr[k,2])
-		gotten[uint32(arr[k,0])-1, uint32(arr[k,1])-1] = True
-	
-	scores[~gotten] = nan
+	gotten = empty(shape = (nC, nB),  dtype = np.bool)
+
+	i = 0
+	for line in data:
+		j = 0
+		for cell in line:
+			if cell == '':
+				scores[i,j] = nan
+				gotten[i,j] = False
+			else:
+				scores[i,j] = float64(cell)
+				gotten[i,j] = True
+			j+=1
+
+		i+=1
+
 	print(scores)
 
-
-	#print(scores[gotten])
-	# Eliminando Benchmarks Problemáticos
-	"""
-	problematics = array([5,6,8,11,12,13])
-	
-	keep = delete((arange(nB)+1), problematics-1)
-	
-	print("Keep: ", keep)
-	
-	scores = scores[:,keep-1]
-	gotten = gotten[:,keep-1]
-		
-	print(scores)
-	"""
-
-	used = np.sum(gotten, axis = 1)
-	order = rec.array(
-		[used, arange(nC)],
-		dtype = [('used', 'u4'),('comp', 'u4')]
-	)
-	order[::-1].sort(order = 'used')
-	order = order['comp']
-	
-	scores = scores[order,:]
-	gotten = gotten[order,:]
-	
-	print("Tabela Reordenada")
-	print(scores)
-
-	data, mask = normalize2(scores, gotten)
-	
-
-	print(order)
-	usedOrder = order
-	order = rec.array(
-		[order, arange(nC)],
-		dtype = [('old', 'u4'),('new', 'u4')]
-	)
-	
-	order.sort(order = 'old')
-	order = order['new']
-	
-	scores = scores[order,:]
-	gotten = gotten[order,:]
 	plotScater2d1(scores, gotten, "Scores X Benchmarks X Máquinas")
 	plotScater2d2(scores, gotten, "Scores X Máquinas X Benchmarks")
 	plotScater3d(scores, gotten, "Scores X Benchmarks X Máquinas")
 	plotMatrixMap(scores, gotten, "Scores X Benchmarks X Máquinas")
-
-	mean = array([])
-
-
-	
-	"""
-	data, mask = normalize1(scores, gotten)
-	plotMatrixMap(data, mask, "")
-	
-	alpha = empty(gotten.shape, dtype = float64)
-	i = 0
-	j = 1
-	actual = gotten[i]&gotten[j]
-	scores[actual]			
+	'''
+	scores = float64(arr)
 	print(scores)
-	#print(scores[gotten])
-	for c in range(nC):
-		x = (arange(nC+1)[gotten[c,:]])
-		y = scores[c, gotten[c,:]]
-		plt.scatter(x,y,color = cm.rainbow(c/nC)) 
-
-	plt.show()
-	"""
-
+	'''
 
 
 # If modifying these scopes, delete your previously saved credentials
@@ -319,12 +255,7 @@ def get_credentials():
 		print('Storing credentials to ' + credential_path)
 	return credentials
 
-def main():
-	"""Shows basic usage of the Sheets API.
-
-	Creates a Sheets API service object and prints some info:
-	https://docs.google.com/spreadsheets/d/1P6BALBoYm3LY91y-oUxEYFwfaaxNGRry66Kw0r58huU/edit
-	"""
+def getSpreadSheet(spreadsheetId, range):
 	credentials = get_credentials()
 	http = credentials.authorize(httplib2.Http())
 	discoveryUrl = ('https://sheets.googleapis.com/$discovery/rest?'
@@ -332,16 +263,21 @@ def main():
 	service = discovery.build('sheets', 'v4', http=http,
 							  discoveryServiceUrl=discoveryUrl)
 
-	spreadsheetId = '1P6BALBoYm3LY91y-oUxEYFwfaaxNGRry66Kw0r58huU'
-	rangeName = 'Medidas Completas!A:C'
+	rangeName = 'eq1!C3:O52'
 	result = service.spreadsheets().values().get(
 		spreadsheetId=spreadsheetId, range=rangeName).execute()
 	values = result.get('values', [])
 
 	if not values:
 		print('No data found.')
+		return "No data found"
 	else:
-		rank(values)
+		return values
+
+def main():
+	val = getSpreadSheet('1bHE_ILLOjKkYOd6otzc_2iIkMJ4Uw27h8d58YBZLLO4', 'eq1!C3:O52')
+	plotMatrix(val)
+	
 
 if __name__ == '__main__':
 	main()
