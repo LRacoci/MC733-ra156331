@@ -1,0 +1,69 @@
+tracename mesa_f2b
+---Dinero IV cache simulator, version 7
+---Written by Jan Edler and Mark D. Hill
+---Copyright (C) 1997 NEC Research Institute, Inc. and Mark D. Hill.
+---All rights reserved.
+---Copyright (C) 1985, 1989 Mark D. Hill.  All rights reserved.
+---See -copyright option for details
+
+---Summary of options (-help option gives usage information).
+
+-l1-isize 32768
+-l1-dsize 32768
+-l1-ibsize 16
+-l1-dbsize 16
+-l1-isbsize 16
+-l1-dsbsize 16
+-l1-iassoc 2
+-l1-dassoc 2
+-l1-irepl l
+-l1-drepl l
+-l1-ifetch d
+-l1-dfetch d
+-l1-dwalloc a
+-l1-dwback a
+-skipcount 0
+-flushcount 0
+-maxcount 0
+-stat-interval 0
+-informat s
+-on-trigger 0x0
+-off-trigger 0x0
+
+---Simulation begins.
+---Simulation complete.
+l1-icache
+ Metrics		      Total	      Instrn	       Data	       Read	      Write	       Misc
+ -----------------	      ------	      ------	      ------	      ------	      ------	      ------
+ Demand Fetches		  1999999980	  1999999980	           0	           0	           0	           0
+  Fraction of total	      1.0000	      1.0000	      0.0000	      0.0000	      0.0000	      0.0000
+
+ Demand Misses		      155987	      155987	           0	           0	           0	           0
+  Demand miss rate	      0.0001	      0.0001	      0.0000	      0.0000	      0.0000	      0.0000
+
+ Multi-block refs                 0
+ Bytes From Memory	     2495792
+ ( / Demand Fetches)	      0.0012
+ Bytes To Memory	           0
+ ( / Demand Writes)	      0.0000
+ Total Bytes r/w Mem	     2495792
+ ( / Demand Fetches)	      0.0012
+
+l1-dcache
+ Metrics		      Total	      Instrn	       Data	       Read	      Write	       Misc
+ -----------------	      ------	      ------	      ------	      ------	      ------	      ------
+ Demand Fetches		   755922172	           0	   755922172	   541059764	   214862408	           0
+  Fraction of total	      1.0000	      0.0000	      1.0000	      0.7158	      0.2842	      0.0000
+
+ Demand Misses		     7412587	           0	     7412587	     4060189	     3352398	           0
+  Demand miss rate	      0.0098	      0.0000	      0.0098	      0.0075	      0.0156	      0.0000
+
+ Multi-block refs           5253427
+ Bytes From Memory	   118601392
+ ( / Demand Fetches)	      0.1569
+ Bytes To Memory	    97336512
+ ( / Demand Writes)	      0.4530
+ Total Bytes r/w Mem	   215937904
+ ( / Demand Fetches)	      0.2857
+
+---Execution complete.
