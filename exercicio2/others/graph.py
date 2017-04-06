@@ -11,25 +11,23 @@ art = np.array([[[[0.0004, 0.5575],[0.0004, 0.5575],[0.0004, 0.5575]],[[0.0001, 
 
 d = {'gcc': gcc,'mesa': mesa,'galgel': galgel,'art': art}
 
-def plot3d(X, Y, Z, nome):
-	X = np.log2(X)
-	Y = np.log2(Y)
-	X,Y = np.meshgrid(X,Y)
+def plot3d(lgX, lgY, Z, nome):
+	lgX,lgY = np.meshgrid(lgX,lgY)
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
 
 	for i, c, cmap_name in zip((0,1,2),('r', 'g', 'b'),('Reds', 'Greens', 'Blues')):
-		ax.plot_surface(X, Y, Z[...,i], color = c, alpha=0.3)
-		
-		cset = ax.contour(X, Y, Z[...,i], zdir='z',  cmap=plt.get_cmap(cmap_name))
-		cset = ax.contour(X, Y, Z[...,i], zdir='x',  cmap=plt.get_cmap(cmap_name))
-		cset = ax.contour(X, Y, Z[...,i], zdir='y',  cmap=plt.get_cmap(cmap_name))
+		ax.plot_surface(lgX, lgY, Z[...,i], color = c, alpha=0.3)
+
+		cset = ax.contour(lgX, lgY, Z[...,i], zdir='z',  cmap=plt.get_cmap(cmap_name))
+		cset = ax.contour(lgX, lgY, Z[...,i], zdir='x',  cmap=plt.get_cmap(cmap_name))
+		cset = ax.contour(lgX, lgY, Z[...,i], zdir='y',  cmap=plt.get_cmap(cmap_name))
 
 	'''
-	cset = ax.contour(X, Y, Z, zdir='z', offset=-100, cmap=cm.coolwarm)
-	cset = ax.contour(X, Y, Z, zdir='x', offset=-40, cmap=cm.coolwarm)
-	cset = ax.contour(X, Y, Z, zdir='y', offset=40, cmap=cm.coolwarm)
+	cset = ax.contour(lgX, lgY, Z, zdir='z', offset=-100, cmap=cm.coolwarm)
+	cset = ax.contour(lgX, lgY, Z, zdir='x', offset=-40, cmap=cm.coolwarm)
+	cset = ax.contour(lgX, lgY, Z, zdir='y', offset=40, cmap=cm.coolwarm)
 	'''
 	ax.set_xlabel('lg(Block Size)')
 	#ax.set_xlim(4, 64)
@@ -43,9 +41,9 @@ def plot3d(X, Y, Z, nome):
 
 
 
-x = np.array([4, 8, 16, 32, 64])
-y = np.array([1, 2, 4, 8, 16])
+lgx = np.arange(5)+2
+lgy = np.arange(5)
 
 for nome in d:
-	plot3d(x, y, d[nome][...,0], nome+"_i")
-	plot3d(x, y, d[nome][...,1], nome+"_d")
+	plot3d(lgx, lgy, d[nome][...,0], nome+"_i")
+	plot3d(lgx, lgy, d[nome][...,1], nome+"_d")
