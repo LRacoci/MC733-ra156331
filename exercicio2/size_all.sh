@@ -20,7 +20,7 @@ do
 		do
 			$ex2/dinero/d4-7/dineroIV \
 				-informat s -trname ${nome}_f2b \
-				-maxtrace 1 \
+				-maxtrace $1 \
 				-l1-isize $sizek -l1-dsize $sizek \
 				-l1-ibsize 4 -l1-dbsize 4 \
 				> $ex2/size_all/${nome}/${i}ki${d}kd.out
