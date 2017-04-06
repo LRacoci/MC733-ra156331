@@ -13,7 +13,6 @@ parse=$ex2/others/parse.out
 echo "d = {" > ${parse}
 for((i=0;i<${#nome[@]};i++));
 do
-
 	this=$ex2/others/max${maxtraces}/${nome[$i]}_${size[$i]}
 	echo "'${nome[$i]}' : np.array([" >>  ${parse}
 	for bsize in 4 8 16 32 64 ; do 
