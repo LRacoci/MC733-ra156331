@@ -21,7 +21,7 @@ Para evitar explosão combinatória seguiu-se o seguinte procedimento:
 3. Com os melhores tamanhos fixados, varia-se os outros parâmetros de forma a obter a melhor combinação.
 
 
-## Tamanhos de cache avaliados
+## Tamanhos de Cache Avaliados
 
 Primeiramente, avaliou-se com apenas 10 traces todas as possíveis combinações de tamanhos para caches L1i e L1d.
 
@@ -56,12 +56,20 @@ Para facilitar a visualização plotou-se a derivada numérica aproximada desses
 
 Definiu-se (64K 32K 8K 4K) para (gcc, mesa, galgel, art) usando como critério3 variações na taxa e procurou-se obter o valor que maximiza a variação com relação ao anterior e minimiza a variação com relação ao próximo. E toma-se o primeiro tamanho que atende a este critério entre as caches de dados e instruções.
 
+
+## Análise dos Outros Parâmetros
+
 Fixado o tamanho da cache, agora varia-se os outros parâmentros:
 - Tamanho do Bloco (Linha)
 - Associatividade (Número de Conjuntos)
 - Política de Substituição
 
-Assim, obtêm-se os seguintes gráficos para L1d:
+Sabendo o tempo que demorou as primeiras execuções e considerando a quantidade de parâmetros sendo avaliados dessa vez, limitou-se o número máximo de traces para 20. Obtêm-se assim, dados suficientes para os seguintes gráficos:
+
+### L1d
+No caso de L1d, notou-se que em todos os casos onde há diferença significativa de desempenho considerando apenas as políticas de substituição, a random geralmente é a pior alternativa, como esperado. Entretanto esta política é mais fácil de implementar e portanto mais barata, já que não é necessário guardar o estado de acessos recentes.
+
+Outra observação relevante é que a diferença entre as políticas de substituição se torna maior com o aumento da associatividade, o que é bem razoável já que se não houver associatividade, não há opções para a substituição e portanto as políticas adotadas são irrelevantes e quanto mais associatividade mais opções há e portanto maior espaço para divergência.
 
 ![alt text](others/figs/surface3d_gcc_d.png "Gráfico 4.2")
 Neste gráfico pode-se observar que a Política de Substiuição LRU (Least Recent Used) é a que se sai melhor comparada as outras já que apresenta uma taxa de hit maior. Também é possível perceber que o tamanho do bloco parece influenciar mais que a associatividade.
@@ -72,19 +80,22 @@ Neste gráfico é interessante notar que com blocos pequenos, a política de sub
 ![alt text](others/figs/surface3d_art_d.png "Gráfico 4.1")
 Neste gráfico é interessante notar como o desempenho parece depender quase que exclusivamente do tamanho do bloco, aumentando o hit conforme o aumento do tamanho, como esperado.
 
-Em todos os casos onde há diferença significativa de desempenho considerando apenas as políticas de substituição, a random geralmente é a pior alternativa, como esperado. Entretanto está política é mais fácil de implementar, já que não é necessário guardar o estado de acessos recentes.
+###L1i
 
-Outra observação relevante é que a diferença entre as políticas de substituição se torna maior com o aumento da associatividade, o que é bem razoável já que se não houver associatividade, não há opções para a substituição e portanto as políticas adotadas são irrelevantes.
-
-Já para L1i:
-
+Já para L1i, a primeira observação interessante é que a quantidade de hits depender menos da associatividade que do tamanho do bloco, consequentemente a divergência quanto a política de substituição é quase nula em todos os casos, o que é razoável considerando que a maior parte dos códigos executa sequencialmente.
 ![alt text](others/figs/surface3d_gcc_i.png "Gráfico 4.2")
+Este é o gráfico que apresenta um desempenho mais simétrico em relação ao tamanho do bloco e a associatividade, consequentemente também é o que apresenta a maior divergência encontrada quanto a política de substituição
 ![alt text](others/figs/surface3d_mesa_i.png "Gráfico 4.4")
+Neste gráfico verifica-se claramente que uma associatividade maior que 2^1 = 2 não traz nenhum desempenho a este benchamrk, já que para valores maiores a taxa de hits continua 1 invariavelmente.
+
 ![alt text](others/figs/surface3d_galgel_i.png "Gráfico 4.3")
+Similar ao anterior.
+
 ![alt text](others/figs/surface3d_art_i.png "Gráfico 4.1")
+Este gráfico também mostra que a taxa de hits da cache chega ao limite para valores de bloco maiores que 2^3 = 8 bytes e de associatividade maiores que 2^1 = 2 caches paralelas.
 
-Em todos os gráficos em que
-
+## Os Melhores Parâmetros
+Dos gráficos acima é possível inferir que a melhor política de substituição é a LRU, pois sempre que há diferença siginificativa entre as políticas a LRU está por cima quase sempre.
 
 ## Tamanhos de bloco avaliados
 
