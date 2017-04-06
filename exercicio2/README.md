@@ -61,12 +61,29 @@ Fixado o tamanho da cache, agora varia-se os outros parâmentros:
 - Associatividade (Número de Conjuntos)
 - Política de Substituição
 
-Assim, obtêm-se os seguintes gráficos:
+Assim, obtêm-se os seguintes gráficos para L1d:
 
 ![alt text](others/figs/surface3d_gcc_d.png "Gráfico 4.2")
+Neste gráfico pode-se observar que a Política de Substiuição LRU (Least Recent Used) é a que se sai melhor comparada as outras já que apresenta uma taxa de hit maior. Também é possível perceber que o tamanho do bloco parece influenciar mais que a associatividade.
 ![alt text](others/figs/surface3d_mesa_d.png "Gráfico 4.4")
+Neste gráfico pode-se observar que as políticas de substituição não parecem ser tão determinantes. Mas o mais interessante é a queda,mesmo que pequena em números absolutos da taxa de hit quando o tamanho do bloco é grande mas a associatividade é baixa. O que mostra a importância de a associatividade exisitir
 ![alt text](others/figs/surface3d_galgel_d.png "Gráfico 4.3")
+Neste gráfico é interessante notar que com blocos pequenos, a política de substituição influencia bastante no desempenho. Outra observação é que o desempenho parece depender mais do tamanho do bloco do que da associatividade.
 ![alt text](others/figs/surface3d_art_d.png "Gráfico 4.1")
+Neste gráfico é interessante notar como o desempenho parece depender quase que exclusivamente do tamanho do bloco, aumentando o hit conforme o aumento do tamanho, como esperado.
+
+Em todos os casos onde há diferença significativa de desempenho considerando apenas as políticas de substituição, a random geralmente é a pior alternativa, como esperado. Entretanto está política é mais fácil de implementar, já que não é necessário guardar o estado de acessos recentes.
+
+Outra observação relevante é que a diferença entre as políticas de substituição se torna maior com o aumento da associatividade, o que é bem razoável já que se não houver associatividade, não há opções para a substituição e portanto as políticas adotadas são irrelevantes.
+
+Já para L1i:
+
+![alt text](others/figs/surface3d_gcc_i.png "Gráfico 4.2")
+![alt text](others/figs/surface3d_mesa_i.png "Gráfico 4.4")
+![alt text](others/figs/surface3d_galgel_i.png "Gráfico 4.3")
+![alt text](others/figs/surface3d_art_i.png "Gráfico 4.1")
+
+Em todos os gráficos em que
 
 
 ## Tamanhos de bloco avaliados

@@ -12,8 +12,8 @@ art = 		np.array([[[[0.0004, 0.5575],[0.0004, 0.5575],[0.0004, 0.5575]],[[0.0001
 
 d = {'gcc': gcc,'mesa': mesa,'galgel': galgel,'art': art}
 
-def plot3d(lgX, lgY, Z, nome):
-	lgX,lgY = np.meshgrid(lgX,lgY)
+def plot3d(lgX, lgY, Z, labelZ, nome):
+	lgX,lgY = np.meshgrid(lgX,lgY, indexing='ij')
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
@@ -34,9 +34,9 @@ def plot3d(lgX, lgY, Z, nome):
 	cset = ax.contour(lgX, lgY, Z, zdir='y', offset=40, cmap=cm.coolwarm)
 	'''
 
-	ax.set_xlabel('lg(Associativity)')
-	ax.set_ylabel('lg(Block Size)')
-	ax.set_zlabel('Demand Miss Rate')
+	ax.set_xlabel('lg(Block Size)')
+	ax.set_ylabel('lg(Associativity)')
+	ax.set_zlabel(labelZ)
 
 	ax.set_title(nome)
 
@@ -45,7 +45,7 @@ def plot3d(lgX, lgY, Z, nome):
 	fig.savefig('figs/surface3d_'+nome+'.png')
 
 
-def plot2d(X, Y, Z, nome):
+def plot2d(X, Y, Z, labelZ, nome):
 	n = np.arange(X.shape[0]*Y.shape[0])
 	fig, ax = plt.subplots()
 	plt.xticks(n, [str(i) + "," + str(j) for i,j in product(X,Y)])
@@ -53,7 +53,7 @@ def plot2d(X, Y, Z, nome):
 	ax.scatter(n, Z[...,1], c = 'r', label = "Random")
 	ax.scatter(n, Z[...,2], c = 'b', label = "FIFO")
 	ax.set_xlabel("lg(Associatividade), lg(Bytes por Bloco)")
-	ax.set_ylabel("Demand Miss Rate")
+	ax.set_ylabel(labelZ)
 	ax.set_title(nome)
 	plt.show()
 	fig.savefig('figs/scatter2d_'+nome+'.png')
@@ -63,7 +63,7 @@ lgx = np.arange(5)+2
 lgy = np.arange(5)
 
 for nome in d:
-	plot3d(lgx, lgy, d[nome][...,0], nome+"_i")
-	plot3d(lgx, lgy, d[nome][...,1], nome+"_d")
-	plot2d(lgx, lgy, d[nome][...,0], nome+"_i")
-	plot2d(lgx, lgy, d[nome][...,1], nome+"_d")
+	plot3d(lgx, lgy, 1-d[nome][...,0], 'Demand Hit Rate', nome+"_i")
+	plot3d(lgx, lgy, 1-d[nome][...,1], 'Demand Hit Rate', nome+"_d")
+	plot2d(lgx, lgy, 1-d[nome][...,0], 'Demand Hit Rate', nome+"_i")
+	plot2d(lgx, lgy, 1-d[nome][...,1], 'Demand Hit Rate', nome+"_d")
