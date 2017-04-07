@@ -99,29 +99,39 @@ Dos gráficos acima é possível inferir que a melhor política de substituiçã
 
 Com isso determinado, executou-se os testes novamente, dessa vez com 100 traces, mas apenas com a LRU como política de substituição.
 
-Para fascilitar encontrar os melhores valores, plotou-se os valores em heatmaps, pois assim é possível visualizar ao mesmo tempo a taxa de hits e com quais parâmetros essa taxa foi atingida.
+Para fascilitar encontrar os melhores valores, plotou-se os valores em heatmaps e em histogramas onde o eixo x tem todas as combinações de lg(assocaitividade) e lg(tamanho do bloco), pois assim é possível visualizar ao mesmo tempo a taxa de hits e com quais parâmetros essa taxa foi atingida.
 
 Também plotou-se a norma do gradiente desta função, para visualizar as taxas de mudança. Os gráficos são exibidos a seguir:
 
-![alt text](others/max100/figs/heatmap_gcc_d.png "Gráfico 5.2")
-Este gráfico permite concluir que o desempenho é praticamente independente do tamanho do bloco, então escolhe-se o menor tamanho de bloco possível: 2^2 = 4 bytes.
-![alt text](others/max100/figs/heatmap_gcc_dChange.png "Gráfico 5.2")
+![alt text](others/max100/figs/surface3d_gcc.png "Gráfico 5.2.1")
+Este gráfico permite concluir que o desempenho para L1d é praticamente independente do tamanho do bloco, então escolhe-se o menor tamanho de bloco possível: 2^2 = 4 bytes.
+Para L1i o mesmo ocorre em uma escala menore mais próxima da taxa de Hits máxima.
+
+Outra forma de visuzlizar a mesma coisa seria através do seguinte gráfico:
+![alt text](others/max100/figs/2d_gcc.png "Gráfico 5.2.2")
+
+![alt text](others/max100/figs/heatmap_gcc_dChange.png "Gráfico 5.2.3")
 A partir deste gráfico é possível perceber que a maior mudança de valor ocorre com associatividade 2^2 = 4, assim considera-se 2^3 = 8 como o melhor valor, já que este tem a melhor melhora na taxa de hits em relação aos anteriores.
 
-![alt text](others/max100/figs/heatmap_mesa_d.png "Gráfico 5.4")
+![alt text](others/max100/figs/heatmap_mesa_d.png "Gráfico 5.4.1")
+Neste caso, nenhum dos parâmetros é independente dos outros, assim o critério deve ser o primeiro onde a variação dimnui de maneira significativa de forma a minimizar ambos os parâmetros. Ao mesmo tempo deve-se considerar que toda a mudança possível neste caso está dentro de uma janela de 4%.
 
-![alt text](others/max100/figs/heatmap_mesa_dChange.png "Gráfico 5.4")
+![alt text](others/max100/figs/surface3d_mesa.png "Gráfico 5.2.1")
+Semelhante ao que se conluiu no anterior, a taxa de hits de L1d parece não depender da associatividade. Assim, escolhe-se como melhor o valor o menor possível, isto é 2^0 = 1 de associatividade. Para L1i escolhe-se 2^1 = 2, porque a melhora se estaviliza aí
 
-![alt text](others/max100/figs/heatmap_galgel_d.png "Gráfico 5.3")
-![alt text](others/max100/figs/heatmap_galgel_dChange.png "Gráfico 5.3")
+Considerando a mudança a seguir conclui-se que o melhor valor para L1d é 2^3 = 8bytes pelos critérios já apresentados:
+![alt text](others/max100/figs/heatmap_mesa_dChange.png "Gráfico 5.2.3")
 
-![alt text](others/max100/figs/heatmap_art_d.png "Gráfico 5.1")
-![alt text](others/max100/figs/heatmap_art_dChange.png "Gráfico 4.1")
+Usando um procedimento semelhante ao mostrado nos dois casos anteriores para os gráficos a seguir, determinou-se os melhores valores como:
 
-## Tamanhos de bloco avaliados
+![alt text](others/max100/figs/surface3d_galgel.png "Gráfico 5.2.1")
+Aqui o desempenho para L1i é independente de ambos os parâmetros, assim qualquer escolha é válida, querendo minmizar o valor dos parâmetros por questões de custo de implementação escolhe-se o menor possível para L1i: 4bytes de bloco e associatividade 1.
+Para L1d novamente é preciso considerar a taxa de mudança, isto é o gradiente, ou seja:
+![alt text](others/max100/figs/heatmap_galgel_dChange.png "Gráfico 5.2.3")
+Assim é possível observar que para 2^4 = 16 bytes e associatividade 2^0=1, o gráfico assume um mínimo e como pode ser visto no gráfico acima, este valor é um dos melhores dentro do intervalo analisado
 
-## Associatividade
+![alt text](others/max100/figs/surface3d_art.png "Gráfico 5.2.1")
+Neste grafo, de forma semelhante aos anteriores a L1i já assume desempenho ótimo para o mínimo (igual aos casos anteriores)
+A análise de L1d é idêntica a do gcc, inclusive os gradientes são muito semelhantes como pode ser verificado:
 
-## Outras configurações avaliadas
-
-## Interpretação dos Resultados
+![alt text](others/max100/figs/heatmap_art_dChange.png "Gráfico 5.2.3")
