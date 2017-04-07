@@ -1,0 +1,250 @@
+d = {
+'gcc' : np.array([
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+], dtype = np.float64),
+'mesa' : np.array([
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+], dtype = np.float64),
+'galgel' : np.array([
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+], dtype = np.float64),
+'art' : np.array([
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+[
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+[ #nums
+],
+],
+], dtype = np.float64),
+}

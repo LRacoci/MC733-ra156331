@@ -95,7 +95,28 @@ Similar ao anterior.
 Este gráfico também mostra que a taxa de hits da cache chega ao limite para valores de bloco maiores que 2^3 = 8 bytes e de associatividade maiores que 2^1 = 2 caches paralelas.
 
 ## Os Melhores Parâmetros
-Dos gráficos acima é possível inferir que a melhor política de substituição é a LRU, pois sempre que há diferença siginificativa entre as políticas a LRU está por cima quase sempre.
+Dos gráficos acima é possível inferir que a melhor política de substituição é a LRU, pois sempre que há diferença siginificativa entre as políticas, a LRU tem maior taxa de Hit, já que aparece por cima nos gráficos quase sempre.
+
+Com isso determinado, executou-se os testes novamente, dessa vez com 100 traces, mas apenas com a LRU como política de substituição.
+
+Para fascilitar encontrar os melhores valores, plotou-se os valores em heatmaps, pois assim é possível visualizar ao mesmo tempo a taxa de hits e com quais parâmetros essa taxa foi atingida.
+
+Também plotou-se a norma do gradiente desta função, para visualizar as taxas de mudança. Os gráficos são exibidos a seguir:
+
+![alt text](others/max100/figs/heatmap_gcc_d.png "Gráfico 5.2")
+Este gráfico permite concluir que o desempenho é praticamente independente do tamanho do bloco, então escolhe-se o menor tamanho de bloco possível: 2^2 = 4 bytes.
+![alt text](others/max100/figs/heatmap_gcc_dChange.png "Gráfico 5.2")
+A partir deste gráfico é possível perceber que a maior mudança de valor ocorre com associatividade 2^2 = 4, assim considera-se 2^3 = 8 como o melhor valor, já que este tem a melhor melhora na taxa de hits em relação aos anteriores.
+
+![alt text](others/max100/figs/heatmap_mesa_d.png "Gráfico 5.4")
+
+![alt text](others/max100/figs/heatmap_mesa_dChange.png "Gráfico 5.4")
+
+![alt text](others/max100/figs/heatmap_galgel_d.png "Gráfico 5.3")
+![alt text](others/max100/figs/heatmap_galgel_dChange.png "Gráfico 5.3")
+
+![alt text](others/max100/figs/heatmap_art_d.png "Gráfico 5.1")
+![alt text](others/max100/figs/heatmap_art_dChange.png "Gráfico 4.1")
 
 ## Tamanhos de bloco avaliados
 
