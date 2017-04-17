@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<!-- saved from url=(0062)http://www.ic.unicamp.br/~lucas/teaching/mc723/2017-1/ex3.html -->
+<html lang="en" hc="delumine-all  hw_accel"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Unicamp MC723</title>
+
+
+
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="./ex3_files/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+	<!-- Optional theme -->
+	<link rel="stylesheet" href="./ex3_files/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="./ex3_files/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<div id="intro" class="page-section page-padded">
+
+	<div class="container">
+
+      <div class="page-header"></div>
+
+      <div class="jumbotron">
+			<h1>Exercício 3: Contagem de ciclos</h1>
+			<p></p>
+      </div>
+
+
+		<div class="row">
+
+<aside>
+<h2>Informações Gerais</h2>
+<dl>
+  <dt>Deadline:</dt> <dd> 20/04 até as 23:59. Veja detalhes sobre a entrega no final da página.</dd><br>
+  <dt>Formato de entrega:</dt> <dd>Relatório no formato markdown, com limite de duas páginas.</dd><br>
+  <dt>Forma de entrega:</dt>Repositório Git pessoal<br>
+</dl>
+</aside>
+
+<section>
+<h2>Objetivos</h2>
+<ul>
+<li>Aprender noções básicas do ambiente de simulação usado na disciplina.</li>
+<li>Relembrar conceitos sobre medida de desempenho, em especial CPI.</li>
+<li>Avaliar o desempenho de um processador baseado no tempo de execução de um conjunto de programas.</li>
+</ul>
+<p><b>Atenção</b>: Este exercício, assim como todos os demais, é individual. Isto significa que você não pode, em hipótese alguma, olhar o código de um de seus colegas. Você pode tirar dúvidas longe do computador ou pedir auxílio ao professor.</p>
+</section>
+
+<section>
+<h2>Antes de começar</h2>
+<p>Você deve relembrar os conceitos relacionados à medidas de desempenho. Procure pensar em respostas para as seguintes perguntas (não precisa colocá-las no seu relatório):</p>
+
+<ul>
+<li>Como medir o desempenho de um sistema?</li>
+<li>O que é CPI?</li>
+<li>Que tipo de métrica é válida para a avaliação do desempenho?</li>
+<li>Como medir o desempenho de um programa que está sendo executado dentro de um simulador?</li>
+<li>O tempo de execução do simulador é relevante para avaliar o desempenho do sistema?</li>
+</ul>
+
+<p>É importante que você saiba responder estas perguntas antes de continuar a atividade.</p>
+</section>
+
+<section>
+<h2>Pré-Atividade</h2>
+
+<p>Nesta atividade, assim como em várias outras da disciplina, utilizaremos um simulador do processador MIPS, feito na linguagem <a href="http://www.archc.org/">ArchC</a>. Durante o semestre você irá aprender mais sobre esta linguagem e a capacidade de implementar simuladores distintos. Mas neste primeiro momento, o importante é entender as noções básicas do simulador, como invocá-lo, como compilar programas e como gerar um resultado correto de execução.</p>
+
+<p>ArchC é uma linguagem para descrição de arquiteturas de processadores. A finalidade principal é facilitar o trabalho do projetista de processadores e também de sistemas, acelerando o desenvolvimento de simuladores e demais ferramentas necessárias para a avaliação de uma ideia, antes de passar para a fase de prototipação em hardware.</p>
+
+<h3>Infra-estrutura</h3>
+
+<p>O simulador ArchC está disponível pré-compilado tanto no IC-3 (em <code>/opt/mc723//tools/archc</code>) quanto no box Vagrant da disciplina (em <code>~/tools/archc</code>). No IC-3, você pode configurar as variáveis de ambiente do seu terminal para o ArchC incluindo as seguintes linhas no seu arquivo <code>~/.profile</code> ou equivalente:
+
+  </p><pre>source /opt/mc723/tools/archc/etc/env.sh
+export PATH=/opt/mc723/tools/mips-newlib-elf/bin:$PATH
+</pre>
+
+No box Vagrant as variáveis de ambiente já estão configuradas, e o diretório <code>~/code</code> é compartilhado com a máquina host.
+<h3>Compilando o Simulador e Executando um Programa</h3>
+
+
+
+<p>Vamos utilizar o modelo do processador <b>MIPS</b>, que é uma versão ampliada do processador estudado na disciplina MC722, com instruções extras. Baixe e extraia o arquivo do <a href="https://github.com/ArchC/mips/archive/v2.4.0.tar.gz">modelo</a>:
+
+</p><pre>wget https://github.com/ArchC/mips/archive/v2.4.0.tar.gz
+tar xzf v2.4.0.tar.gz
+cd mips-2.4.0/</pre>
+
+Leia o <b>README</b> que acompanha o modelo. Nele há instruções específicas sobre a copmilação do simulador do processador. Para isto, você vai precisar do gerador de simuladores <b>acsim</b>. Três comandos são necessários para gerar e rodar o simulador:<p></p>
+
+<pre>acsim mips.ac -abi
+make
+./mips.x --load=<file-path> [args]</file-path></pre>
+
+<p>O primeiro comando cria os arquivos do simulador, baseados na descrição contida em <b>mips.ac</b> (arquivo principal de descrição do processador em ArchC). O segundo comando compila o simulador, gerando um executável chamado <b>mips.x</b>. O terceiro comando é a utilização do simulador para executar um programa compilado para MIPS. Como não temos nenhum programa para MIPS, crie um arquivo chamado hello.c com o clássico "Hello World" e vamos compilá-lo.</p>
+
+<pre>mips-newlib-elf-gcc -specs=archc hello.c -o hello.mips</pre>
+
+<p>De forma similar ao gcc que você está acostumado a utilizar, esta é uma versão do gcc compilada para gerar binários para a arquitetura MIPS. Todas as demais ferramentas de desenvolvimento também existem numa versão com o prefixo mips-elf. Denomina-se <i>cross-compiler</i> um compilador que roda numa plataforma (x86 no caso) e gera programas para executar em outra (MIPS no nosso exemplo). O parâmetro -specs=archc informa algumas regras específicas do ArchC, que devem ser seguidas pelo compilador. Os últimos parâmetros indicam o arquivo a ser gerado e estamos gerando o programa com o sufixo da arquitetura para facilitar o entendimento. De posse do novo executável, agora basta invocar o simulador e ver seu programa sendo executado.</p>
+
+<pre>./mips.x --load=hello.mips</pre>
+
+<p>Uma outra ferramenta que pode ser útil é o <b>objdump</b> (na forma mips-newlib-elf-objdump para MIPS). Ele é capaz de mostrar várias informações sobre o programa (consulte o manual para ver as opções). Um exemplo de uso para listar o código assembly é:</p>
+
+<pre>mips-newlib-elf-objdump -d hello.mips</pre>
+
+<p>Reconheceu alguma instrução? Conseguiu entender um pouco do código?</p>
+
+<p>As instruções implementadas pelo simulador estão descritas em dois
+arquivos: <b>mips_isa.ac</b> e <b>mips_isa.cpp</b>. O primeiro
+descreve quais instruções o processador terá e a codificação delas. O
+segundo arquivo contém uma implementação do comportamento da instrução
+(um trecho de código em C++ que descreve a funcionalidade da
+instrução). Abra o segundo arquivo e procure por <b>ac_behavior( add
+)</b>, este trecho de código parece intuitivo?</p>
+</section>
+
+<section><h2>Atividade</h2>
+
+<h3>Contando instruções</h3>
+
+<p>Agora que você já sabe gerar o simulador, a primeira tarefa é contar quantas vezes a instrução <b>add</b> acontece durante a execução do seu "Hello World". Para isto, você deverá editar o arquivo <b>mips_isa.cpp</b> e incluir um contador global. Você pode editar o <b>ac_behavior(add)</b> e também deve precisar editar os <b>ac_behavior(begin)</b> e <b>ac_behavior(end)</b> que são executados no início e final da simulação, respectivamente. Recompile o simulador e execute seu programa (lembre-se de fazer <code>make distclean</code>). Os resultados sairam como você esperava? Caso não tenha havido nenhuma instrução add, você consegue modificar o código fonte do programa para que apareça ao menos uma? Dica: utilize o <b>objdump</b> para tentar entender o que está acontecendo.</p>
+
+<h3>Avaliando o desempenho</h3>
+
+<p>Como cada instrução tem um trecho diferente de código em C++ para implementa-la, o tempo de simulação não está relacionado diretamente com o tempo de execução de um programa. Por isto, ao invés de medirmos o tempo de execução do simulador, vamos computar o tempo em ciclos para a execução do programa. A tabela abaixo indica o CPI médio das categorias de instruções:</p>
+
+<table class="table table-striped">
+<tbody><tr><th>Categoria</th><th>CPI médio</th></tr>
+<tr><td>Acesso à memória</td><td>10</td></tr>
+<tr><td>Controle (branch/jump)</td><td>3</td></tr>
+<tr><td>Outras</td><td>1</td></tr>
+</tbody></table>
+
+<p>Ao invés de ter que alterar todo o código do simulador, o <b>acsim</b> possui a opção <b>-s</b> para gerar estatísticas de simulação. Uma das estatísticas é a contagem do número de vezes que cada instrução executou. Regere o seu simulador com esta opção, colete as estatísticas, e calcule quantos ciclos foram gastos para executar seu programa. Calcule ainda o CPI médio para cada programa.</p>
+
+<p>Execute 3 programas da tabela abaixo, um de cada coluna, e indique o número de ciclos necessários para executar cada um deles. Os programas são retirados do pacote de benchmark MiBench, que está disponível no IC-3 em <code>/opt/mc723/benchmarks/MipsMibench/</code> em no Vagrant box em <code>~/benchmarks/MipsMibench/</code>. Utilize os 3 últimos dígitos do seu RA
+(quarto, quinto e sexto) para selecionar os programas.</p>
+
+<table class="table table-striped">
+<tbody><tr><th>Dígito do RA</th><th>quarto</th><th>quinto</th><th>sexto</th></tr>
+<tr><th> </th><th>(small)</th><th>(small)</th><th>(large)</th></tr>
+<tr><td>0</td><td>basicmath</td><td>escolha livre</td><td>susan corners</td></tr>
+<tr><td>1</td><td>qsort</td><td>rijndael coder</td><td>jpeg coder</td></tr>
+<tr><td>2</td><td>susan corners</td><td>rijndael decoder</td><td>dijkstra</td></tr>
+<tr><td>3</td><td>susan edges</td><td>sha</td><td>patricia</td></tr>
+<tr><td>4</td><td>susan smoothing</td><td>adpcm encoder</td><td>gsm coder</td></tr>
+<tr><td>5</td><td>jpeg coder</td><td>adpcm decoder</td><td>rijndael coder</td></tr>
+<tr><td>6</td><td>jpeg decoder</td><td>crc32</td><td>gsm coder</td></tr>
+<tr><td>7</td><td>lame</td><td>fft</td><td>adpcm encoder</td></tr>
+<tr><td>8</td><td>dijkstra</td><td>gsm coder</td><td>sha</td></tr>
+<tr><td>9</td><td>patricia</td><td>gsm decoder</td><td>escolha livre</td></tr>
+</tbody></table>
+
+<p>Cada programa está acompanhado de dois scripts para execução, <code>runme_small.sh</code> e <code>runme_large.sh</code>. Para utilizar estes scripts, defina a variável de ambiente <code>SIMULATOR</code> para corresponder à linha de comando do simulador gerado, por exemplo <code>  export SIMULATOR="/home/ubuntu/code/mips-2.4.0/mips.x --load="</code>. Informações adicionais podem ser encontradas nos arquivos README dos benchmarks.
+</p>
+</section>
+
+<section>
+  <h2>Entrega</h2>
+
+<p> Crie um diretório no seu repositório com nome exercicioN, onde N é o número do exercício, e crie seu relatório em formato markdown no arquivo README.md do subdiretório. Inclua seu nome e RA no relatório.</p>
+
+<p>Importante: não faça commit de mudanças no subdiretório relativo a este exercício em data posterior ao limite de submissão.</p>
+
+</section>
+
+<section>
+<h2>Avaliação</h2>
+
+<p>A avaliação deste exercício levará em conta (não exclusivamente) os seguintes critérios:</p>
+
+<ul>
+<li>Hello World</li>
+<li>Contagem de instruções</li>
+<li>Avaliação de ciclos e CPI médio para Benchmarks 1, 2, e 3.</li>
+<li>Qualidade e estrutura do relatório</li>
+</ul>
+
+<p>Os critérios apresentados servem apenas para referência, e poderão ser alterados na correção final.</p>
+
+
+</section>
+
+
+		</div>
+
+	</div>
+
+<div class="alert alert-sucess" align="center">
+	Crédito e copyright: Este exercício foi adaptado de material preparado pelo Prof. <a href="http://www.ic.unicamp.br/~rodolfo">Rofolfo Azevedo</a>
+</div>
+
+</div>
+
+
+
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="./ex3_files/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="./ex3_files/bootstrap.min(1).js"></script>
+  
+
+</body><div id="deluminate_fullscreen_workaround" style="position: absolute; top: 0px; left: 0px; width: 1344px; height: 3662px; display: block; z-index: -2147483647; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(255, 255, 255);"></div><div id="deluminate_backdrop" style="position: fixed; top: 0px; left: 0px; height: 100vh; width: 100vw; z-index: -2147483648;"></div></html>
