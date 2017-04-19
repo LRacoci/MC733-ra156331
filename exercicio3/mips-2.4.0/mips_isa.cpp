@@ -34,7 +34,7 @@
 #define Ra 31
 #define Sp 29
 
-int t;
+int addCounter;
 
 // 'using namespace' statement to allow access to all
 // mips-specific datatypes
@@ -62,7 +62,7 @@ void ac_behavior( Type_J ){}
 //!Behavior called before starting simulation
 void ac_behavior(begin)
 {
-	t = 0;
+	addCounter = 0; ///////////////////////////////// Esta linha foi adicionada
 	dbg_printf("@@@ begin behavior @@@\n");
 	RB[0] = 0;
 	npc = ac_pc + 4;
@@ -79,7 +79,7 @@ void ac_behavior(begin)
 //!Behavior called after finishing simulation
 void ac_behavior(end)
 {
-	printf("add execultado %d vezes\n", t);
+	printf("add execultado %d vezes\n", addCounter); ///////////////////////////////// Esta linha foi adicionada
 	dbg_printf("@@@ end behavior @@@\n");
 }
 
@@ -308,7 +308,7 @@ void ac_behavior( lui )
 //!Instruction add behavior method.
 void ac_behavior( add )
 {
-	t++
+	addCounter++ ///////////////////////////////// Esta linha foi adicionada
 	dbg_printf("add r%d, r%d, r%d\n", rd, rs, rt);
 	RB[rd] = RB[rs] + RB[rt];
 	dbg_printf("Result = %#x\n", RB[rd]);
