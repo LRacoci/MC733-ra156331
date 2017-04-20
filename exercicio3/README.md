@@ -317,7 +317,7 @@ A contribuição de cada tipo de instrução para o CPI Médio do Programa pode 
 ![Contribuição CPI Médio](contr_CPI.png)
 **Gráfico 2** : _Contribuição para o CPI médio por Programa_
 
-Como as instruções que não são nem de de acesso a memória nem de controle (outras) são consideradas com um CPI médio de apenas 1, 3 vezes menor que as de controle, e 10 vezes menor que as de acesso a memória. É bastante razoável que o CPI médio do *sha* tenha sido inferior aos outros (quase 2 vezes menor), já que apresenta muito menos instruções de memória e controle que os outros.
+Como as instruções que não são nem de de acesso a memória nem de controle (outras) são consideradas com um CPI médio de apenas 1, que é 3 vezes menor que as de controle, e 10 vezes menor que as de acesso a memória. É bastante razoável que o CPI médio do *sha* tenha sido inferior aos outros (quase 2 vezes menor), já que apresenta muito menos instruções de memória e controle que os outros.
 
 A partir do número total de ciclos e do tempo de execução de cada programa, é possível estimar o que seria a frequênica do processador caso isso não fosse um simulador. Esta estimativa é mostrada na última coluna da **Tabela 7**. 
 
