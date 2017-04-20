@@ -327,7 +327,7 @@ Assim, a melhor forma de medir o desempenho ainda é considerarando apenas o CPI
 
 Dessa forma considerou-se como o CPI do processador a média geométrica dos CPI's médios para cada Benchmark.
 
-Obtemos assim um CPI de ciclos por instrução considerando estes Benchmarks.
+Obtemos assim um CPI de 3,72 ciclos por instrução considerando estes Benchmarks.
 
 
 ## Conclusão
