@@ -255,7 +255,7 @@ Também é possível obter a proporção de cada classe de instrução dividindo
 
 
 | Categoria |  hello | soma1  | soma2  |
-|:---------:|:------:|--------|--------|
+|:---------:|:------:|:------:|:------:|
 |  Memória  | 37,68% | 34,28% | 34,32% |
 |  Controle | 22,65% | 23,56% | 23,53% |
 |   Outras  | 39,68% | 42,16% | 42,15% |
@@ -301,9 +301,9 @@ O resultado de todos os CPI's médio obtidos por programa, assim como a contagem
 |       hello       |    4,84   |     1,41E+04    |        0,01       |         1,41E+06         |
 |       soma1       |    4,56   |     1,87E+04    |        0,01       |         1,87E+06         |
 |       soma2       |    4,56   |     1,87E+04    |        0,01       |         1,87E+06         |
-| susan edges small |    4,30   |     3,48E+07    | 0,18              | 1,93E+08                 |
-| sha small         |    2,85   |     3,76E+07    | 0,29              | 1,30E+08                 |
-| jpg coder large   |    4,21   |     1,26E+08    | 0,62              | 2,03E+08                 |
+| susan edges small |    4,30   |     3,48E+07    |        0,18       |         1,93E+08         |
+|     sha small     |    2,85   |     3,76E+07    |        0,29       |         1,30E+08         |
+|  jpg coder large  |    4,21   |     1,26E+08    |        0,62       |         2,03E+08         |
 **Tabela 7** _Resultados de todos os CPI's médios, tempo de execução obtidos e estimativa de frequência_
 
 ## Análise dos Dados
