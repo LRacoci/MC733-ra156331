@@ -1,7 +1,7 @@
 **Nome**: Lucas Alves Racoci  **RA**: 156331
 Exercício 3
 ===========
-## Introdução 
+## Introdução
 
 Os tipos de métricas válidos para avaliação do desempenho são os que melhor se adequam ao problema, se o objetivo for estabelecer uma métrica global, a melhor é a que se aplica a maioria dos casos, o que se relaciona com a máxima:
 
@@ -10,7 +10,6 @@ Os tipos de métricas válidos para avaliação do desempenho são os que melhor
 Uma forma de medir o desempenho de um programa que está sendo executado dentro de um simulador é usando algum parâmetro que seja comum tanto ao simulador quanto a um ambiente de execução real. Neste caso será usado o número de instruções execultadas de cada tipo.
 
 Exceto nos casos onde o caso mais comum é a execução em simuladores, de forma geral, o tempo de execução do simulador não é relevante para avaliar o desempenho do sistema.
-<<<<<<< HEAD
 
 O desempenho de um sistema computacional pode ser medido através de diversos critérios, no caso de uma únidade de processamento, pode-se usar critérios como:
 
@@ -25,6 +24,7 @@ Neste exercício haverá uma contagem do número de instruções e, usando uma e
 
 ## Objetivo
 Este exercício tem como objetivos:
+
 - Aprender noções básicas do ambiente de simulação ArchC.
 - Relembrar conceitos sobre medida de desempenho, em especial CPI.
 - Avaliar o desempenho de um processador baseado no tempo de execução de um conjunto de programas.
@@ -101,7 +101,7 @@ void ac_behavior(begin)
 }
 ```
 
-```c 
+```c
 //!Behavior called after finishing simulation
 void ac_behavior(end)
 {
@@ -137,7 +137,7 @@ O que pode ser conferido com a linha:
 $ mips-newlib-elf-objdump -d hello.mips | grep -w add  
      114:	00022020 	add	a0,zero,v0
 ```
- Analisando a saída completa do objdump é possível perceber que esta instrução é executada sob a flag **_start**, e sabendo a política de uso dos registradores de MIPS, ela parece estar copiando o valor de retorno da execução da **main** para o primeiro argumento da próxima função **_exit**, que apenas salta para a posição 100, armazenada no registrador v0, como pode ser visto a seguir: 
+ Analisando a saída completa do objdump é possível perceber que esta instrução é executada sob a flag **_start**, e sabendo a política de uso dos registradores de MIPS, ela parece estar copiando o valor de retorno da execução da **main** para o primeiro argumento da próxima função **_exit**, que apenas salta para a posição 100, armazenada no registrador v0, como pode ser visto a seguir:
 ```
  00006600 <_exit>:
 	6600:	24020064 	li	v0,100
@@ -180,7 +180,7 @@ ArchC: Simulation statistics
 ```
  Ou seja, o número de instruções **add** executadas não foi alterado.
  Analisando o arquivo **soma1.dump** gerado com o comando:
-```bash 
+```bash
 $ mips-newlib-elf-objdump -d soma1.mips > soma1.dump
 ```
 Pode-se notar que o compilador transforma adições normais na instrução **addu**:
@@ -190,7 +190,7 @@ Pode-se notar que o compilador transforma adições normais na instrução **add
 Isso provavelmente ocorre para evitar exceções de overflow.
 
 Para forçar o aparecimento de instruções **add**, foram feitas a seguintes modificações:
-```c 
+```c
 #include <stdio.h>
 
 int main(){
@@ -198,7 +198,7 @@ int main(){
 	int y = 6;
 	asm ("add %0, %1, %2": "=r"(x) : "r"(x), "r"(y));
 	printf("Hello World !!!!1!onze!11!! %d\n", x);
-	
+
 	return 0;
 }
 ```
@@ -242,13 +242,14 @@ $ ./mips.x --load=soma2.mips 2> soma2.stat
 ```
 De onde pode-se obter obter o número de vezes que cada instrução foi executada.
 Assim, foi possível agrupar estas instruções em Acesso a memória, controle e outras conforme pode ser visto na tabela a seguir:
+
 | Categoria | hello | soma1 | soma2 |
 |:---------:|:-----:|:-----:|:-----:|
 |  Memória  | 1.093 | 1.406 | 1.408 |
 |  Controle |  657  |  966  |  965  |
 |   Outras  | 1.151 | 1.729 | 1.729 |
 |    Soma   | 2.901 | 4.101 | 4.102 |
-**Tabela 1**: _Número de instruções executadas por tipo_
+**Tabela 1**: _Número de instruções executadas por tipo e por programa_
 
 Também é possível obter a proporção de cada classe de instrução dividindo pelo total:
 
@@ -260,7 +261,8 @@ Também é possível obter a proporção de cada classe de instrução dividindo
 |   Outras  | 39,68% | 42,16% | 42,15% |
 **Tabela 2** _Proporção de instruções executadas por classe_
 
-Usando a seguinte tabela fornecida no enunciado foi possível calcular CPI médio de cada programa
+Usando a seguinte tabela fornecida no enunciado foi possível calcular CPI médio de cada programa.
+
 | Categoria | CPI médio |
 |:---------:|:---------:|
 |  Memória  |     10    |
@@ -269,7 +271,7 @@ Usando a seguinte tabela fornecida no enunciado foi possível calcular CPI médi
 
 **Tabela 3** _CPI médio de cada tipo de instrução_
 
-Obtendo assim: 
+Obtendo assim:
 
 | Benchmark | CPI médio |
 |:---------:|:---------:|
@@ -278,25 +280,48 @@ Obtendo assim:
 |   soma2   |   4,5597  |
 **Tabela 5** _CPI médio de cada programa_
 
-O mesmo procedimento foi repetido para os outros Benchmarks indicados no enunciado, mas dessa vez usando os scripts. Os resultados obtidos para essa parte e também os da parte anterior estão resumidos na **Tabela 6** da próxima seção.
+O mesmo procedimento foi repetido para os outros Benchmarks indicados no enunciado, mas dessa vez usando os scripts do enunciado. Os resultados obtidos para essa parte e também os da parte anterior estão resumidos na **Tabela 7** da próxima seção.
 Como meu RA termina em 331, foram utilizados os benchmarks: _susan edges_, _sha_, _jpg coder_.
 
 
 ## Resultados Obtidos
 
-O resultado de todos os CPI's médio obtidos por programa pode ser visualizado a seguir.
-|  Benchmark  | CPI médio |
-|:-----------:|:---------:|
-|    hello    |   4,8438  |
-|    soma1    |   4,5567  |
-|    soma2    |   4,5597  |
-| susan edges | 4,2987    |
-| sha         | 2,8542    |
-| jpg coder   | 4,2117    |
-**Tabela 7** _Resultados de todos os CPI's médios obtidos_
+O resultado de todos os CPI's médio obtidos por programa, assim como a contagem de ciclos e o tempo de execução dos simuladores podem ser visualizado na tabela a seguir, a partir desses dois dados, também foi calculada uma estimativa para  a Frequência do simulador sendo executado na máquina:
 
-## Análise dos Resultados
->>>>>>> fe0e677aad8c8ea3a66d391d4ec04865ef25a0a0
+| Programa |  hello |  soma1 |  soma2 | susan edges |   sha  | jpg coder |
+|:--------:|:------:|:------:|:------:|:-----------:|:------:|:---------:|
+|  Memória | 37,68% | 34,28% | 34,32% |    34,01%   | 19,58% |   32,86%  |
+| Controle | 22,65% | 23,56% | 23,53% |    11,88%   |  4,61% |   12,73%  |
+|  Outras  | 39,68% | 42,16% | 42,15% |    54,11%   | 75,82% |   54,41%  |
+**Tabela 6** : *Proporção de Instruções por Programa*
+
+
+|     Benchmark     | CPI médio | Total de ciclos | Tempo de Execução | Estimativa de Frequencia |
+|:-----------------:|:---------:|:---------------:|:-----------------:|:------------------------:|
+|       hello       |  4,84E+00 |     1,41E+04    |        0,01       |         1,41E+06         |
+|       soma1       |  4,56E+00 |     1,87E+04    |        0,01       |         1,87E+06         |
+|       soma2       |  4,56E+00 |     1,87E+04    |        0,01       |         1,87E+06         |
+| susan edges small | 4,30E+00  |     3,48E+07    |        0,18       |         1,93E+08         |
+|     sha small     | 2,85E+00  |     3,76E+07    |        0,29       |         1,30E+08         |
+|  jpg coder large  | 4,21E+00  |     1,26E+08    |        0,62       |         2,03E+08         |
+**Tabela 7** _Resultados de todos os CPI's médios, tempo de execução obtidos e estimativa de frequência_
+
+## Análise dos Dados
+
+A distribuição de instruções por programa pode ser vizualisada no gŕafico a seguir:
+![Distribuição de Instruções](distr_instr.png)
+**Gráfico 1** : _Distribuição de Instruções por Programa_
+
+A contribuição de cada tipo de instrução para o CPI Médio do Programa pode ser visualizado no gráfico a seguir, os valores estão indicados com mais precisão na **Tabela 7**.
+
+![Contribuição CPI Médio](contr_CPI.png)
+**Gráfico 2** : _Contribuição para o CPI médio por Programa_
+
+Como as instruções que não são nem de de acesso a memória nem de controle (outras) são consideradas com um CPI médio de apenas 1, 3 vezes menor que as de controle, e 10 vezes menor que as de acesso a memória. É bastante razoável que o CPI médio do *sha* tenha sido inferior aos outros (quase 2 vezes menor), já que apresenta muito menos instruções de memória e controle que os outros.
+
+A partir do número total de ciclos e do tempo de execução de cada programa, é possível estimar o que seria a frequênica do processador caso isso não fosse um simulador. Esta estimativa é mostrada na última coluna da **Tabela 7**. 
+
+Ainda que os programas não tenham sido executados todos no mesmo computador, os 3 primeiros programas foram execultados em uma máquina e os 3 últimos benchmarks foram executados em outra. Mesmo assim os valores de frequência estimados não estão próximos. Isso mostra que, nesse caso o tempo de execução não é uma boa forma de medir o desempenho de um processador, porque esses valores deveriam ser iguais.Esta diferença encontrada pode ser explicada por um erro aleatório no tempo de execução, já que todos o
 
 
 ## Conclusão
