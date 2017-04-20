@@ -281,7 +281,7 @@ Obtendo assim:
 **Tabela 5** _CPI médio de cada programa_
 
 O mesmo procedimento foi repetido para os outros Benchmarks indicados no enunciado, mas dessa vez usando os scripts do enunciado. Os resultados obtidos para essa parte e também os da parte anterior estão resumidos na **Tabela 7** da próxima seção.
-Como meu RA termina em 331, foram utilizados os benchmarks: _susan edges_, _sha_, _jpg coder_.
+Como meu RA termina em 331, foram utilizados os benchmarks: _susan edges_ (small), _sha_ (small), _jpg coder_(large).
 
 
 ## Resultados Obtidos
