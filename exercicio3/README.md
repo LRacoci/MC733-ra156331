@@ -298,12 +298,12 @@ O resultado de todos os CPI's médio obtidos por programa, assim como a contagem
 
 |     Benchmark     | CPI médio | Total de ciclos | Tempo de Execução | Estimativa de Frequencia |
 |:-----------------:|:---------:|:---------------:|:-----------------:|:------------------------:|
-|       hello       |  4,84E+00 |     1,41E+04    |        0,01       |         1,41E+06         |
-|       soma1       |  4,56E+00 |     1,87E+04    |        0,01       |         1,87E+06         |
-|       soma2       |  4,56E+00 |     1,87E+04    |        0,01       |         1,87E+06         |
-| susan edges small | 4,30E+00  |     3,48E+07    |        0,18       |         1,93E+08         |
-|     sha small     | 2,85E+00  |     3,76E+07    |        0,29       |         1,30E+08         |
-|  jpg coder large  | 4,21E+00  |     1,26E+08    |        0,62       |         2,03E+08         |
+|       hello       |    4,84   |     1,41E+04    |        0,01       |         1,41E+06         |
+|       soma1       |    4,56   |     1,87E+04    |        0,01       |         1,87E+06         |
+|       soma2       |    4,56   |     1,87E+04    |        0,01       |         1,87E+06         |
+| susan edges small |    4,30   |     3,48E+07    | 0,18              | 1,93E+08                 |
+| sha small         |    2,85   |     3,76E+07    | 0,29              | 1,30E+08                 |
+| jpg coder large   |    4,21   |     1,26E+08    | 0,62              | 2,03E+08                 |
 **Tabela 7** _Resultados de todos os CPI's médios, tempo de execução obtidos e estimativa de frequência_
 
 ## Análise dos Dados
@@ -321,7 +321,14 @@ Como as instruções que não são nem de de acesso a memória nem de controle (
 
 A partir do número total de ciclos e do tempo de execução de cada programa, é possível estimar o que seria a frequênica do processador caso isso não fosse um simulador. Esta estimativa é mostrada na última coluna da **Tabela 7**. 
 
-Ainda que os programas não tenham sido executados todos no mesmo computador, os 3 primeiros programas foram execultados em uma máquina e os 3 últimos benchmarks foram executados em outra. Mesmo assim os valores de frequência estimados não estão próximos. Isso mostra que, nesse caso o tempo de execução não é uma boa forma de medir o desempenho de um processador, porque esses valores deveriam ser iguais.Esta diferença encontrada pode ser explicada por um erro aleatório no tempo de execução, já que todos o
+Ainda que os programas não tenham sido executados todos no mesmo computador, os 3 primeiros programas foram execultados em uma máquina e os 3 últimos benchmarks foram executados em outra. Mesmo assim os valores de frequência estimados estão distantes. Isso mostra que, nesse caso o tempo de execução não é uma boa forma de medir o desempenho de um processador, porque esses valores deveriam estar bem mais próximos.Esta diferença encontrada pode ser explicada por um erro aleatório no tempo de execução, já que todos os valores de tempo de execução estão abaixo de 1 segundo.
+
+Assim, a melhor forma de medir o desempenho ainda é considerarando apenas o CPI Médio de cada Benchmark.
+
+Dessa forma considerou-se como o CPI do processador a média geométrica dos CPI's médios para cada Benchmark.
+
+Obtemos assim um CPI de ciclos por instrução considerando estes Benchmarks.
 
 
 ## Conclusão
+A partir do que foi mostrado na análise é possível concluir que nesse caso o tempo de execução do simulador não é um bom critério para medir o desempenho do processador simulado porque quando tentou-se usá-lo dessa forma, não foi possível obter uma resposata coerente entre os Benchmarks.
