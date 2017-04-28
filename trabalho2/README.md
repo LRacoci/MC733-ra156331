@@ -1,5 +1,13 @@
 # Trabalho 2
 
+## Grupo:
+
+|           Nome           |   RA   |
+|:------------------------:|:------:|
+|    Lucas Alves Racoci    | 156331 |
+|        Rafael Zane       | 157079 |
+| Luiz Fernando da Fonseca | 156475 |
+
 ## Características Avaliadas
 
 ### Pipeline
@@ -30,3 +38,13 @@ Também serão considerados modelos de pipelines de 13 estágios.
 
 ### Superescalar Dual-Issue
 - Alguns stalls deverão ser adicionados quando instruções simultâneas usarem e gravarem no mesmo registrador.
+- Alguns dos forwardings já descritos também ocorrerão.
+
+### Cache
+- Sem Cache
+- L1: Variando os parâmetros: Tamanho da cache, tamanho do bloco e associatividade.
+
+## Programas
+- rijndael coder large
+- sha small
+- basic math small
