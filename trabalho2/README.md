@@ -34,7 +34,7 @@ Também serão considerados modelos de pipelines de 13 estágios.
 
 ### Preditor de Branches
 - Preditor de 2 bits: Funciona como uma máquina de 4 estados considerando estados fortes e fracos de branches tomados e não tomados.
-- Preditor mais complexo.
+- Preditores always taken e always not taken.
 
 ### Superescalar Dual-Issue
 - Alguns stalls deverão ser adicionados quando instruções simultâneas usarem e gravarem no mesmo registrador.
@@ -48,3 +48,25 @@ Também serão considerados modelos de pipelines de 13 estágios.
 - rijndael coder large
 - sha small
 - basic math small
+
+## Eventos
+
+- Total de instruções
+- Cache misses da L1
+- Contar hazard de dados de instruções aritméticas
+- Contar hazard de dados de instruções de load
+- Contar hazard de dados para branches que usam resultados anteriores
+- Número de ciclos devidos a stalls no branch
+
+## Configurações
+
+- Pipeline de 5 estágios simples, variando L1 para encontrar uma melhor configuração, preditor always not taken.
+- Pipeline de 5 estágios simples, melhor configuração de L1, preditor always taken.
+- Pipeline de 5 estágios simples, melhor configuração de L1, preditor de 2 bits.
+- Pipeline de 7 estágios simples, melhor configuração de L1, preditor always not taken.
+- Pipeline de 7 estágios simples, melhor configuração de L1, preditor always taken.
+- Pipeline de 7 estágios simples, melhor configuração de L1, preditor de 2 bits.
+- Pipeline de 13 estágios simples, melhor configuração de L1, preditor always not taken.
+- Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor always not taken.
+- Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor always taken.
+- Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor de 2 bits.
