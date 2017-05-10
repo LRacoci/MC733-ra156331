@@ -24,6 +24,11 @@
 #include  "mips_isa_init.cpp"
 #include  "mips_bhv_macros.H"
 
+/* Inclui a biblioteca do dinero */
+extern "C" {
+#include  "d4-7/d4.h"
+}
+#include  "string.h"
 
 //If you want debug information for this model, uncomment next line
 //#define DEBUG_MODEL
@@ -41,11 +46,40 @@ using namespace mips_parms;
 static int processors_started = 0;
 #define DEFAULT_STACK_SIZE (256*1024)
 
+/* Contadores de ciclos */
+unsigned long int instrucoes = 0;
+
+/* Espaço de nomes do C++ */
+using namespace std;
+
+/* Variáveis do dinero */
+d4cache *Memi, *Memd;
+d4cache *L1i, *L1d;
+
+/* Função que faz a leitura da cache com o dinero */
+void doread(void* addr, d4cache* Cache) {
+  d4memref R;
+  R.address = *((d4addr*)&addr);
+  R.size = sizeof(double);
+  R.accesstype = D4XREAD;
+  d4ref(Cache, R);
+}
+
+/* Função que faz a escrita da cache com o dinero */
+void dowrite(void* addr, d4cache* Cache) {
+  d4memref R;
+  R.address = *((d4addr*)&addr);
+  R.size = sizeof(double);
+  R.accesstype = D4XWRITE;
+  d4ref(Cache, R);
+}
+
 //!Generic instruction behavior method.
 void ac_behavior( instruction )
 { 
    dbg_printf("----- PC=%#x ----- %lld\n", (int) ac_pc, ac_instr_counter);
   //  dbg_printf("----- PC=%#x NPC=%#x ----- %lld\n", (int) ac_pc, (int)npc, ac_instr_counter);
+   instrucoes++;
 #ifndef NO_NEED_PC_UPDATE
   ac_pc = npc;
   npc = ac_pc + 4;
@@ -64,6 +98,37 @@ void ac_behavior(begin)
   RB[0] = 0;
   npc = ac_pc + 4;
 
+  /* Inicializa as caches de instrução e de dados do dinero */
+  Memi = d4new(0);
+  L1i = d4new(Memi);
+  L1i->name = "L1i";
+  L1i->lg2blocksize = 8;
+  L1i->lg2subblocksize = 0;
+  L1i->lg2size = 16;
+  L1i->assoc = 2;
+  L1i->replacementf = d4rep_lru;
+  L1i->prefetchf = d4prefetch_none;
+  L1i->wallocf = d4walloc_always;
+  L1i->wbackf = d4wback_always;
+  L1i->name_replacement = L1i->name_prefetch = L1i->name_walloc = L1i->name_wback = "L1i";
+  Memd = d4new(0);
+  L1d = d4new(Memd);
+  L1d->name = "L1d";
+  L1d->lg2blocksize = 8;
+  L1d->lg2subblocksize = 0;
+  L1d->lg2size = 16;
+  L1d->assoc = 2;
+  L1d->replacementf = d4rep_lru;
+  L1d->prefetchf = d4prefetch_none;
+  L1d->wallocf = d4walloc_always;
+  L1d->wbackf = d4wback_always;
+  L1d->name_replacement = L1d->name_prefetch = L1d->name_walloc = L1d->name_wback = "L1d";
+  int r;
+  if (0 != (r = d4setup())) {
+    cerr << "Failed\n";
+    abort();
+  }
+
   // Is is not required by the architecture, but makes debug really easier
   for (int regNum = 0; regNum < 32; regNum ++)
     RB[regNum] = 0;
@@ -76,6 +141,7 @@ void ac_behavior(begin)
 //!Behavior called after finishing simulation
 void ac_behavior(end)
 {
+  cout << "Número total de instruções: " << instrucoes << endl;
   dbg_printf("@@@ end behavior @@@\n");
 }
 
