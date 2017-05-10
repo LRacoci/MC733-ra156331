@@ -26,9 +26,10 @@
 
 /* Inclui a biblioteca do dinero */
 extern "C" {
-#include  "d4-7/d4.h"
+#include "d4-7/d4.h"
 }
-#include  "string.h"
+#include "string.h"
+#include <iostream>
 
 //If you want debug information for this model, uncomment next line
 //#define DEBUG_MODEL
@@ -97,7 +98,7 @@ void ac_behavior(begin)
   dbg_printf("@@@ begin behavior @@@\n");
   RB[0] = 0;
   npc = ac_pc + 4;
-
+  
   /* Inicializa as caches de instrução e de dados do dinero */
   Memi = d4new(0);
   L1i = d4new(Memi);
