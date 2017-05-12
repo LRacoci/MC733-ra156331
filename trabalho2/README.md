@@ -70,3 +70,7 @@ Também serão considerados modelos de pipelines de 13 estágios.
 - Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor always not taken.
 - Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor always taken.
 - Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor de 2 bits.
+
+## Para rodar os testes
+
+./mips.x --load=susan input_small.pgm output_small.smoothing.pgm -s
