@@ -113,92 +113,73 @@ public:
         p.resize(PIPELINE_SIZE, Instrucao(BUBBLE));
     }
 
+    int stall(int stall_cicles, int first_buble) {
+        for (int i = PIPELINE_SIZE - 1; i > first_buble; i--) {
+            p[i] = p[i - stall_cicles];
+        }
+        for(int i = 0; i < stall_cicles; i++) {
+            p[first_buble + i] = Instrucao(BUBBLE);
+        }
+        dbg_printf("------------- Stall %d ciclos -------------\n", stall_cicles);
+        return stall_cicles;
+    }
+
     /* Contabiliza os ciclos devido a hazards e erros do branch */
     void update() {
         int i;
 
         /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
-        if ((p[2].t == LOAD) && (p[1].t == OUTRAS || p[1].t == STORE)) {
-            if ((p[2].dest == p[1].rs) || (p[2].dest == p[1].rt)) {
-                ciclos_load += 1;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
-            }
+        if (
+            (p[2].t == LOAD) and 
+            (p[1].t == OUTRAS or p[1].t == STORE) and
+            (p[2].dest == p[1].rs) or (p[2].dest == p[1].rt)
+        ) {
+            ciclos_load += stall(1,2);
         }
 
         /* Checa se jump e branches que possuem um único registrador dão stall,
          * ou depois apenas branches que possuem os dois registradores */
         if (
-            ((p[0].t == JUMP) && (p[0].rs != -1)) || (
-                (p[0].t == BRANCH) && (p[0].rt == -1))
+            // Jump ou branch no começo sem rs ou rt respec
+            ((p[0].t == JUMP) and (p[0].rs != -1)) or 
+            ((p[0].t == BRANCH) and (p[0].rt == -1))
         ) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
-            if ((p[1].t == LOAD) && (p[0].rs == p[1].dest)) {
-                ciclos_load += 2;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 2];
-                }
-                p[1] = p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 2 ciclos -------------\n");
-            } else if (
-                (p[1].t == OUTRAS) && (
-                    (p[0].rs == p[1].dest)
-                )
+            if (
+                (p[1].t == LOAD) and 
+                (p[0].rs == p[1].dest)
             ) {
-                ciclos_arit += 1;
-                for (i = PIPELINE_SIZE - 1; i > 1; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[1] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
-            } else if ((p[2].t == LOAD) && (p[0].rs == p[2].dest)) {
-                ciclos_load += 1;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_load += stall(2, 2);
+            } else if (
+                (p[1].t == OUTRAS) and 
+                (p[0].rs == p[1].dest)
+            ) {
+                ciclos_arit += stall(1, 1);
+            } else if (
+                (p[2].t == LOAD) and 
+                (p[0].rs == p[2].dest)
+            ) {
+                ciclos_load += stall(1, 2);
             }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
-            if (
-                (p[1].t == LOAD) && (
-                    (p[0].rs == p[1].dest) || (p[0].rt == p[1].dest)
+            if ((p[1].t == LOAD) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_load += 2;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 2];
-                }
-                p[1] = p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 2 ciclos -------------\n");
-            } else if (
-                (p[1].t == OUTRAS) && (
-                    (p[0].rs == p[1].dest) || (p[0].rt == p[1].dest)
+                ciclos_load += stall(2,2);
+            } else if ((p[1].t == OUTRAS) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_arit += 1;
-                for (i = PIPELINE_SIZE - 1; i > 1; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[1] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
-            } else if (
-                (p[2].t == LOAD) && (
-                    (p[0].rs == p[2].dest) || (p[0].rt == p[2].dest)
+                ciclos_arit += stall(1,1);
+            } else if ((p[2].t == LOAD) and (
+                    (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
                 )
             ) {
-                ciclos_load += 1;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_load += stall(1,2);
             }
         }
 
@@ -554,7 +535,7 @@ void ac_behavior( addi ) {
     RB[rt] = RB[rs] + imm;
     dbg_printf("Result = %#x\n", RB[rt]);
     //Test overflow
-    if ( ((RB[rs] & 0x80000000) == (imm & 0x80000000)) &&
+    if ( ((RB[rs] & 0x80000000) == (imm & 0x80000000)) and
              ((imm & 0x80000000) != (RB[rt] & 0x80000000)) ) {
         fprintf(stderr, "EXCEPTION(addi): integer overflow.\n"); exit(EXIT_FAILURE);
     }
@@ -636,7 +617,7 @@ void ac_behavior( add ) {
     RB[rd] = RB[rs] + RB[rt];
     dbg_printf("Result = %#x\n", RB[rd]);
     //Test overflow
-    if ( ((RB[rs] & 0x80000000) == (RB[rd] & 0x80000000)) &&
+    if ( ((RB[rs] & 0x80000000) == (RB[rd] & 0x80000000)) and
              ((RB[rd] & 0x80000000) != (RB[rt] & 0x80000000)) ) {
         fprintf(stderr, "EXCEPTION(add): integer overflow.\n"); exit(EXIT_FAILURE);
     }
@@ -893,7 +874,7 @@ void ac_behavior( j ) {
 void ac_behavior( jal ) {
     dbg_printf("jal %d\n", addr);
     // Save the value of PC + 8 (return address) in $ra ($31) and
-    // jump to the address given by PC(31...28)||(addr<<2)
+    // jump to the address given by PC(31...28)or(addr<<2)
     // It must also flush the instructions that were loaded into the pipeline
     RB[Ra] = ac_pc+4; //ac_pc is pc+4, we need pc+8
     
@@ -970,7 +951,7 @@ void ac_behavior( bne ) {
 //!Instruction blez behavior method.
 void ac_behavior( blez ) {
     dbg_printf("blez r%d, %d\n", rs, imm & 0xFFFF);
-    if( (RB[rs] == 0 ) || (RB[rs]&0x80000000 ) ){
+    if( (RB[rs] == 0 ) or (RB[rs]&0x80000000 ) ){
         tomado = true;
 #ifndef NO_NEED_PC_UPDATE
         npc = ac_pc + (imm<<2), 1;
@@ -985,7 +966,7 @@ void ac_behavior( blez ) {
 //!Instruction bgtz behavior method.
 void ac_behavior( bgtz ) {
     dbg_printf("bgtz r%d, %d\n", rs, imm & 0xFFFF);
-    if( !(RB[rs] & 0x80000000) && (RB[rs]!=0) ){
+    if( !(RB[rs] & 0x80000000) and (RB[rs]!=0) ){
         tomado = true;
 #ifndef NO_NEED_PC_UPDATE
         npc = ac_pc + (imm<<2);
