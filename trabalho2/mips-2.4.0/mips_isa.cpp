@@ -53,6 +53,18 @@ unsigned long int ciclos_arit = 0;
 unsigned long int ciclos_load = 0;
 unsigned long int ciclos_branch = 0;
 unsigned long int ciclos_total = 4;
+unsigned long int ciclos_cache = 0;
+unsigned long int ciclos_jump = 0;
+
+/* Variáveis que indicam se o branch atual foi tomado e os dois bits */
+bool tomado = false;
+enum BP2bits {SNT, WNT, WT, ST};
+BP2bits preditor = SNT;
+
+/* Define qual preditor será utilizado, descomente aquele que será utilizado */
+#define PREDITOR_ALWAYS_TAKEN
+//#define PREDITOR_ALWAYS_NOT_TAKEN
+//#define PREDITOR_2_BITS
 
 /* Espaço de nomes do C++ */
 using namespace std;
@@ -201,6 +213,54 @@ public:
     }
     p[0] = instr;
 
+    /* Considera que os jumps sempre dão stall de um ciclo, sem predição */
+    if (instr.t == JUMP) {
+      ciclos_jump++;
+    }
+
+    /* Realiza as predições dos branches */
+    if (instr.t == BRANCH) {
+#ifdef PREDITOR_ALWAYS_TAKEN
+      if (tomado == false) {
+        ciclos_branch++;
+      }
+#else
+
+#ifdef PREDITOR_ALWAYS_NOT_TAKEN
+      if (tomado == true) {
+        ciclos_branch++;
+      }
+#else
+
+#ifdef PREDITOR_2_BITS
+      if (tomado == true) {
+        if (preditor == SNT) {
+          preditor = WNT;
+          ciclos_branch++;
+        } else if (preditor == WNT) {
+          preditor = WT;
+          ciclos_branch++;
+        } else {
+          preditor = ST;
+        }
+      } else {
+        if (preditor == ST) {
+          preditor = WT;
+          ciclos_branch++;
+        } else if (preditor == WT) {
+          preditor = WNT;
+          ciclos_branch++;
+        } else {
+          preditor = SNT;
+        }
+      }
+#endif
+
+#endif
+
+#endif
+    }
+
     update();
   }
 
@@ -311,16 +371,18 @@ void ac_behavior(begin) {
 
 //!Behavior called after finishing simulation
 void ac_behavior(end) {
-  ciclos_total += ciclos_arit + ciclos_load + ciclos_branch;
+  ciclos_cache += (L1d->miss[D4XREAD] + L1d->miss[D4XWRITE] + L1i->miss[D4XREAD]) * CACHE_STALL;
+  ciclos_total += ciclos_arit + ciclos_load + ciclos_branch + ciclos_jump + ciclos_cache;
   cout << "Número total de instruções: " << instrucoes << endl;
   cout << "Número total de ciclos totais: " << ciclos_total << endl;
   cout << "Número total de ciclos de hazards aritméticos: " << ciclos_arit << endl;
   cout << "Número total de ciclos de hazards de load: " << ciclos_load << endl;
   cout << "Número total de ciclos de stalls de branch: " << ciclos_branch << endl;
+  cout << "Número total de ciclos de stalls de jumps: " << ciclos_jump << endl;
+  cout << "Número total de ciclos de stalls de cache: " << ciclos_cache << endl;
   cout << "L1i read miss/fetch: " << L1i->miss[D4XREAD] << "/" << L1i->fetch[D4XREAD] << endl;
   cout << "L1d read miss/fetch: " << L1d->miss[D4XREAD] << "/" << L1d->fetch[D4XREAD] << endl;
   cout << "L1d write miss/fetch: " << L1d->miss[D4XWRITE] << "/" << L1d->fetch[D4XWRITE] << endl;
-  pip.print();
   dbg_printf("@@@ end behavior @@@\n");
 }
 
@@ -530,7 +592,7 @@ void ac_behavior( sltiu ) {
 };
 
 //!Instruction andi behavior method.
-void ac_behavior( andi ) {	
+void ac_behavior( andi ) {  
   dbg_printf("andi r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   RB[rt] = RB[rs] & (imm & 0xFFFF) ;
   dbg_printf("Result = %#x\n", RB[rt]);
@@ -538,7 +600,7 @@ void ac_behavior( andi ) {
 };
 
 //!Instruction ori behavior method.
-void ac_behavior( ori ) {	
+void ac_behavior( ori ) {   
   dbg_printf("ori r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   RB[rt] = RB[rs] | (imm & 0xFFFF) ;
   dbg_printf("Result = %#x\n", RB[rt]);
@@ -546,7 +608,7 @@ void ac_behavior( ori ) {
 };
 
 //!Instruction xori behavior method.
-void ac_behavior( xori ) {	
+void ac_behavior( xori ) {  
   dbg_printf("xori r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   RB[rt] = RB[rs] ^ (imm & 0xFFFF) ;
   dbg_printf("Result = %#x\n", RB[rt]);
@@ -554,7 +616,7 @@ void ac_behavior( xori ) {
 };
 
 //!Instruction lui behavior method.
-void ac_behavior( lui ) {	
+void ac_behavior( lui ) {   
   dbg_printf("lui r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   // Load a constant in the upper 16 bits of a register
   // To achieve the desired behaviour, the constant was shifted 16 bits left
@@ -605,7 +667,7 @@ void ac_behavior( subu ) {
 };
 
 //!Instruction slt behavior method.
-void ac_behavior( slt ) {	
+void ac_behavior( slt ) {   
   dbg_printf("slt r%d, r%d, r%d\n", rd, rs, rt);
   // Set the RD if RS< RT
   if( (ac_Sword) RB[rs] < (ac_Sword) RB[rt] )
@@ -875,23 +937,29 @@ void ac_behavior( jalr ) {
 void ac_behavior( beq ) {
   dbg_printf("beq r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   if( RB[rs] == RB[rt] ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, rt, -1, -1));
 };
 
 //!Instruction bne behavior method.
-void ac_behavior( bne ) {	
+void ac_behavior( bne ) {   
   dbg_printf("bne r%d, r%d, %d\n", rt, rs, imm & 0xFFFF);
   if( RB[rs] != RB[rt] ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, rt, -1, -1));
 };
 
@@ -899,11 +967,14 @@ void ac_behavior( bne ) {
 void ac_behavior( blez ) {
   dbg_printf("blez r%d, %d\n", rs, imm & 0xFFFF);
   if( (RB[rs] == 0 ) || (RB[rs]&0x80000000 ) ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2), 1;
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
 
@@ -911,11 +982,14 @@ void ac_behavior( blez ) {
 void ac_behavior( bgtz ) {
   dbg_printf("bgtz r%d, %d\n", rs, imm & 0xFFFF);
   if( !(RB[rs] & 0x80000000) && (RB[rs]!=0) ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
 
@@ -923,11 +997,14 @@ void ac_behavior( bgtz ) {
 void ac_behavior( bltz ) {
   dbg_printf("bltz r%d, %d\n", rs, imm & 0xFFFF);
   if( RB[rs] & 0x80000000 ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
 
@@ -935,11 +1012,14 @@ void ac_behavior( bltz ) {
 void ac_behavior( bgez ) {
   dbg_printf("bgez r%d, %d\n", rs, imm & 0xFFFF);
   if( !(RB[rs] & 0x80000000) ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
 
@@ -948,11 +1028,14 @@ void ac_behavior( bltzal ) {
   dbg_printf("bltzal r%d, %d\n", rs, imm & 0xFFFF);
   RB[Ra] = ac_pc+4; //ac_pc is pc+4, we need pc+8
   if( RB[rs] & 0x80000000 ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   dbg_printf("Return = %#x\n", ac_pc+4);
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
@@ -962,11 +1045,14 @@ void ac_behavior( bgezal ) {
   dbg_printf("bgezal r%d, %d\n", rs, imm & 0xFFFF);
   RB[Ra] = ac_pc+4; //ac_pc is pc+4, we need pc+8
   if( !(RB[rs] & 0x80000000) ){
+    tomado = true;
 #ifndef NO_NEED_PC_UPDATE
     npc = ac_pc + (imm<<2);
 #endif 
     dbg_printf("Taken to %#x\n", ac_pc + (imm<<2));
-  } 
+  } else {
+    tomado = false;
+  }
   dbg_printf("Return = %#x\n", ac_pc+4);
   pip.insere_instr(Instrucao(BRANCH, rs, -1, -1, -1));
 };
