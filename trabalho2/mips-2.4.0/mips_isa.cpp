@@ -147,30 +147,15 @@ public:
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
             if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
-                ciclos_load += 2;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 2];
-                }
-                p[1] = p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 2 ciclos -------------\n");
+                ciclos_load += stall(0,2);
             } else if (
                 (p[1].t == OUTRAS) and (
                     (p[0].rs == p[1].dest)
                 )
             ) {
-                ciclos_arit += 1;
-                for (i = PIPELINE_SIZE - 1; i > 1; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[1] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_arit += stall(0,1);
             } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                ciclos_load += 1;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_load += stall(1,1);
             }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
@@ -180,34 +165,19 @@ public:
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_load += 2;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 2];
-                }
-                p[1] = p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 2 ciclos -------------\n");
+                ciclos_load += stall(0,2);
             } else if (
                 (p[1].t == OUTRAS) and (
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_arit += 1;
-                for (i = PIPELINE_SIZE - 1; i > 1; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[1] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_arit += stall(0,1);
             } else if (
                 (p[2].t == LOAD) and (
                     (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
                 )
             ) {
-                ciclos_load += 1;
-                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
-                    p[i] = p[i - 1];
-                }
-                p[2] = Instrucao(BUBBLE);
-                dbg_printf("------------- Stall 1 ciclo -------------\n");
+                ciclos_load += stall(1,1);
             }
         }
 
