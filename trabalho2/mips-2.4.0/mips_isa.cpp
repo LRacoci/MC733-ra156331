@@ -55,6 +55,7 @@ unsigned long int ciclos_branch = 0;
 unsigned long int ciclos_total = 4;
 unsigned long int ciclos_cache = 0;
 unsigned long int ciclos_jump = 0;
+unsigned long int ciclos_misspredict = 0;
 
 /* Variáveis que indicam se o branch atual foi tomado e os dois bits */
 bool tomado = false;
@@ -136,6 +137,12 @@ public:
             ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
         ) {
             ciclos_load += stall(1,1);
+        } else if (
+            (p[2].t == LOAD) and
+            (p[1].t == LOAD) and
+            (p[2].dest == p[1].rs)
+        ) {
+            ciclos_load += stall(1,1);
         }
 
         /* Checa se jump e branches que possuem um único registrador dão stall,
@@ -147,15 +154,15 @@ public:
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
             if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
-                ciclos_load += stall(0,2);
+                ciclos_branch += stall(0,2);
             } else if (
                 (p[1].t == OUTRAS) and (
                     (p[0].rs == p[1].dest)
                 )
             ) {
-                ciclos_arit += stall(0,1);
+                ciclos_branch += stall(0,1);
             } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                ciclos_load += stall(1,1);
+                ciclos_branch += stall(1,1);
             }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
@@ -165,19 +172,19 @@ public:
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_load += stall(0,2);
+                ciclos_branch += stall(0,2);
             } else if (
                 (p[1].t == OUTRAS) and (
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_arit += stall(0,1);
+                ciclos_branch += stall(0,1);
             } else if (
                 (p[2].t == LOAD) and (
                     (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
                 )
             ) {
-                ciclos_load += stall(1,1);
+                ciclos_branch += stall(1,1);
             }
         }
 
@@ -201,13 +208,13 @@ public:
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
             if (tomado == false) {
-                ciclos_branch++;
+                ciclos_misspredict++;
             }
 #else
 
 #ifdef PREDITOR_ALWAYS_NOT_TAKEN
             if (tomado == true) {
-                ciclos_branch++;
+                ciclos_misspredict++;
             }
 #else
 
@@ -215,20 +222,20 @@ public:
             if (tomado == true) {
                 if (preditor == SNT) {
                     preditor = WNT;
-                    ciclos_branch++;
+                    ciclos_misspredict++;
                 } else if (preditor == WNT) {
                     preditor = WT;
-                    ciclos_branch++;
+                    ciclos_misspredict++;
                 } else {
                     preditor = ST;
                 }
             } else {
                 if (preditor == ST) {
                     preditor = WT;
-                    ciclos_branch++;
+                    ciclos_misspredict++;
                 } else if (preditor == WT) {
                     preditor = WNT;
-                    ciclos_branch++;
+                    ciclos_misspredict++;
                 } else {
                     preditor = SNT;
                 }
@@ -351,13 +358,14 @@ void ac_behavior(begin) {
 //!Behavior called after finishing simulation
 void ac_behavior(end) {
     ciclos_cache += (L1d->miss[D4XREAD] + L1d->miss[D4XWRITE] + L1i->miss[D4XREAD]) * CACHE_STALL;
-    ciclos_total += ciclos_arit + ciclos_load + ciclos_branch + ciclos_jump + ciclos_cache;
+    ciclos_total += ciclos_arit + ciclos_load + ciclos_branch + ciclos_jump + ciclos_cache + ciclos_misspredict;
     cout << "Número total de instruções: " << instrucoes << endl;
     cout << "Número total de ciclos totais: " << ciclos_total << endl;
     cout << "Número total de ciclos de hazards aritméticos: " << ciclos_arit << endl;
     cout << "Número total de ciclos de hazards de load: " << ciclos_load << endl;
-    cout << "Número total de ciclos de stalls de branch: " << ciclos_branch << endl;
+    cout << "Número total de ciclos de hazards de branch: " << ciclos_branch << endl;
     cout << "Número total de ciclos de stalls de jumps: " << ciclos_jump << endl;
+    cout << "Número total de ciclos de stalls de branches errados: " << ciclos_misspredict << endl;
     cout << "Número total de ciclos de stalls de cache: " << ciclos_cache << endl;
     cout << "L1i read miss/fetch: " << L1i->miss[D4XREAD] << "/" << L1i->fetch[D4XREAD] << endl;
     cout << "L1d read miss/fetch: " << L1d->miss[D4XREAD] << "/" << L1d->fetch[D4XREAD] << endl;
