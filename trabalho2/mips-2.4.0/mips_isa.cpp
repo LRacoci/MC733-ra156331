@@ -67,6 +67,31 @@ BP2bits preditor = SNT;
 //#define PREDITOR_ALWAYS_NOT_TAKEN
 //#define PREDITOR_2_BITS
 
+/* Define tamanho do pipeline */
+#define PIPE5
+//#define PIPE7
+//#define PIPE13
+
+
+#ifdef PIPE5
+
+#define PIPELINE_SIZE 5
+
+#else
+#ifdef PIPE7
+
+#define PIPELINE_SIZE 7
+
+#else
+#ifdef PIPE13
+
+#define PIPELINE_SIZE 13
+
+#endif
+#endif
+#endif
+
+
 /* Espaço de nomes do C++ */
 using namespace std;
 
@@ -78,7 +103,6 @@ d4cache *L1i, *L1d;
 enum Tipo {OUTRAS, LOAD, STORE, BRANCH, JUMP, BUBBLE};
 
 /* Constantes do programa */
-#define PIPELINE_SIZE 5
 #define CACHE_STALL 10
 
 /* Classe que representa uma instrução */
@@ -103,7 +127,47 @@ public:
         cout << ", rd: " << rd << ")" << endl; 
     }
 
+    void dbg_print(){
+        if (dest != -1){
+            dbg_printf("r%d := %s(rs:%d, rt:%d)", dest,
+                (t == OUTRAS) ? "OUTRAS":
+                (t ==  LOAD ) ?  "LOAD" :
+                (t == STORE ) ? "STORE" :
+                (t == BRANCH) ? "BRANCH": 
+                (t ==  JUMP ) ? "JUMP"  : 
+                (t == BUBBLE) ? "BUBBLE": 
+                "ABSURDO",
+            rs,rt)
+        }else{
+            dbg_printf("%s(rs:%d, rt:%d)" 
+                t == OUTRAS ? "OUTRAS":
+                t ==  LOAD  ?  "LOAD" :
+                t == STORE  ? "STORE" :
+                t == BRANCH ? "BRANCH": 
+                t ==  JUMP  ? "JUMP"  : 
+                t == BUBBLE ? "BUBBLE": 
+                "ABSURDO",
+            rs,rt)
+        }
+        
+    }
 };
+
+ostream& operator<<(ostream& os, const Instrucao& i) {  
+    if(i.dest != -1) {
+        os << 'r' << i.dest << " := ";
+    }
+    if (i.t == OUTRAS) os << "OUTRAS"; else
+    if (i.t ==  LOAD ) os <<  "LOAD";  else
+    if (i.t == STORE ) os << "STORE";  else
+    if (i.t == BRANCH) os << "BRANCH"; else
+    if (i.t ==  JUMP ) os << "JUMP";   else
+    if (i.t == BUBBLE) os << "BUBBLE"; else os << "ABSURDO";
+
+    os << "(rs:" << i.rs << " rt:" << i.rt << ')';
+    return os;
+} 
+
 
 /* Classe que representa um histórico de instruções */
 class Pipeline {
@@ -130,6 +194,7 @@ public:
     void update() {
         int i;
 
+#ifdef PIPE5
         /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
         if (
             (p[2].t == LOAD) and 
@@ -149,7 +214,8 @@ public:
          * ou depois apenas branches que possuem os dois registradores */
         if (
             ((p[0].t == JUMP) and (p[0].rs != -1)) or (
-                (p[0].t == BRANCH) and (p[0].rt == -1))
+                (p[0].t == BRANCH) and (p[0].rt == -1)
+            )
         ) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
@@ -187,6 +253,133 @@ public:
                 ciclos_branch += stall(1,1);
             }
         }
+#else
+#ifdef PIPE7
+        /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
+        if (
+            (p[2].t == LOAD) and 
+            (p[1].t == OUTRAS or p[1].t == STORE) and 
+            ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
+        ) {
+            ciclos_load += stall(1,1);
+        } else if (
+            (p[2].t == LOAD) and
+            (p[1].t == LOAD) and
+            (p[2].dest == p[1].rs)
+        ) {
+            ciclos_load += stall(1,1);
+        }
+
+        /* Checa se jump e branches que possuem um único registrador dão stall,
+         * ou depois apenas branches que possuem os dois registradores */
+        if (
+            ((p[0].t == JUMP) and (p[0].rs != -1)) or (
+                (p[0].t == BRANCH) and (p[0].rt == -1)
+            )
+        ) {
+            /* Checa load seguido de branch, outras instruções seguidas de branch
+             * e branch precedido por qualquer coisa que é precedida por branch */
+            if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
+                ciclos_branch += stall(0,2);
+            } else if (
+                (p[1].t == OUTRAS) and (
+                    (p[0].rs == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,1);
+            } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
+                ciclos_branch += stall(1,1);
+            }
+        } else if (p[0].t == BRANCH) {
+            /* Checa load seguido de branch, outras instruções seguidas de branch
+             * e branch precedido por qualquer coisa que é precedida por branch */
+            if (
+                (p[1].t == LOAD) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,2);
+            } else if (
+                (p[1].t == OUTRAS) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,1);
+            } else if (
+                (p[2].t == LOAD) and (
+                    (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
+                )
+            ) {
+                ciclos_branch += stall(1,1);
+            }
+        }
+
+
+#else
+#ifdef PIPE13
+        /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
+        if (
+            (p[2].t == LOAD) and 
+            (p[1].t == OUTRAS or p[1].t == STORE) and 
+            ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
+        ) {
+            ciclos_load += stall(1,1);
+        } else if (
+            (p[2].t == LOAD) and
+            (p[1].t == LOAD) and
+            (p[2].dest == p[1].rs)
+        ) {
+            ciclos_load += stall(1,1);
+        }
+
+        /* Checa se jump e branches que possuem um único registrador dão stall,
+         * ou depois apenas branches que possuem os dois registradores */
+        if (
+            ((p[0].t == JUMP) and (p[0].rs != -1)) or (
+                (p[0].t == BRANCH) and (p[0].rt == -1)
+            )
+        ) {
+            /* Checa load seguido de branch, outras instruções seguidas de branch
+             * e branch precedido por qualquer coisa que é precedida por branch */
+            if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
+                ciclos_branch += stall(0,2);
+            } else if (
+                (p[1].t == OUTRAS) and (
+                    (p[0].rs == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,1);
+            } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
+                ciclos_branch += stall(1,1);
+            }
+        } else if (p[0].t == BRANCH) {
+            /* Checa load seguido de branch, outras instruções seguidas de branch
+             * e branch precedido por qualquer coisa que é precedida por branch */
+            if (
+                (p[1].t == LOAD) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,2);
+            } else if (
+                (p[1].t == OUTRAS) and (
+                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,1);
+            } else if (
+                (p[2].t == LOAD) and (
+                    (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
+                )
+            ) {
+                ciclos_branch += stall(1,1);
+            }
+        }
+
+
+#endif
+#endif
+#endif
 
     }
 
@@ -259,8 +452,25 @@ public:
         }
         cout << endl;
     }
+    /* Imprime o pipeline na dpuração */
+    void dbg_print(){
+        dbg_printf("Histórico de instruções:");
+        for (int i = 0; i < PIPELINE_SIZE; i++) {
+            p[i].dbg_print();
+            dbg_printf("\n");
+        }
+    }
 
 };
+
+// Joga Pipeline pra uma stream de saída
+ostream& operator<<(ostream& os, const Pipeline& p) {  
+    cout << "Histórico de instruções:" << endl;
+    for (int i = 0; i < PIPELINE_SIZE; i++) {
+        os << p.p[i] << endl;
+    }
+    return os;
+} 
 
 /* Pipeline */
 Pipeline pip;
@@ -370,6 +580,9 @@ void ac_behavior(end) {
     cout << "L1i read miss/fetch: " << L1i->miss[D4XREAD] << "/" << L1i->fetch[D4XREAD] << endl;
     cout << "L1d read miss/fetch: " << L1d->miss[D4XREAD] << "/" << L1d->fetch[D4XREAD] << endl;
     cout << "L1d write miss/fetch: " << L1d->miss[D4XWRITE] << "/" << L1d->fetch[D4XWRITE] << endl;
+
+    //cout << pip << endl;
+
     dbg_printf("@@@ end behavior @@@\n");
 }
 
