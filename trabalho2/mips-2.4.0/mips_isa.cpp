@@ -67,6 +67,8 @@ BP2bits preditor = SNT;
 //#define PREDITOR_ALWAYS_NOT_TAKEN
 //#define PREDITOR_2_BITS
 
+#define SUPERESCALAR
+
 /* Define tamanho do pipeline */
 #define PIPE5
 //#define PIPE7
@@ -174,8 +176,18 @@ class Pipeline {
 public:
     vector<Instrucao> p;
 
+/* Se for o processador superescalar é necessário um segundo vetor de instrução */
+#ifdef SUPERESCALAR
+    vector<Instrucao> p2;
+    int last_inserted = 2;
+#endif
+
     Pipeline() {
+
         p.resize(PIPELINE_SIZE, Instrucao(BUBBLE));
+#ifdef SUPERESCALAR
+        p2.resize(PIPELINE_SIZE, Instrucao(BUBBLE));
+#endif
     }
 
     unsigned stall(unsigned pos, unsigned cicles){
@@ -189,6 +201,20 @@ public:
         dbg_printf("------------- Stall %d ciclo -------------\n", cicles);
         return cicles;
     }
+
+#ifdef SUPERESCALAR
+    unsigned stall_p2(unsigned pos, unsigned cicles){
+        pos++;
+        for (int i = PIPELINE_SIZE - 1; i > pos; i--) {
+            p2[i] = p2[i - cicles];
+        }
+        for (int i = 0; i < cicles; i++){
+            p2[pos+i] = Instrucao(BUBBLE);
+        }
+        dbg_printf("------------- Stall %d ciclo -------------\n", cicles);
+        return cicles;
+    }
+#endif
 
     /* Contabiliza os ciclos devido a hazards e erros do branch */
     void update() {
@@ -383,20 +409,94 @@ public:
 
     }
 
+#ifdef SUPERESCALAR
+    void update_superescalar() {
+
+        if (last_inserted == 1) {
+
+            /* Checa se uma instrução ocorreu logo depois de um load no pipeline 1 ou no 2 e ocorre dependência de um dos seus registradores */
+            if (((p[2].t == LOAD) and (p[1].t == OUTRAS or p[1].t == STORE) and ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))) or
+                ((p2[2].t == LOAD) and (p[1].t == OUTRAS or p[1].t == STORE) and ((p2[2].dest == p[1].rs) or (p2[2].dest == p[1].rt)))
+            ) {
+                ciclos_load += stall(1,1);
+            /* Checa se ocorreu um load após o outro no pipeline 1 ou 2 e existe dependência de registrador */
+            } else if (((p[2].t == LOAD) and (p[1].t == LOAD) and (p[2].dest == p[1].rs)) or
+                ((p2[2].t == LOAD) and (p[1].t == LOAD) and (p2[2].dest == p[1].rs))
+            ) {
+                ciclos_load += stall(1,1);
+            }
+
+            /* Checa se jump e branches que possuem um único registrador dão stall,
+            ou depois apenas branches que possuem os dois registradores */
+            if (
+                ((p[0].t == JUMP) and (p[0].rs != -1)) or (
+                (p[0].t == BRANCH) and (p[0].rt == -1)
+                )
+            ) {
+                /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 é load ou outras instruções e existe dependências.
+                Depois checa se a instrução no estágio após o próximo do pipeline 1 ou 2 é load e existe dependências */
+                if (((p[1].t == LOAD) and (p[0].rs == p[1].dest)) or ((p2[1].t == LOAD) and (p[0].rs == p2[1].dest))) {
+                    ciclos_branch += stall(0,2);
+                } else if (
+                    ((p[1].t == OUTRAS) and ((p[0].rs == p[1].dest))) or ((p2[1].t == OUTRAS) and ((p[0].rs == p2[1].dest)))
+                ) {
+                    ciclos_branch += stall(0,1);
+                } else if (((p[2].t == LOAD) and (p[0].rs == p[2].dest)) or ((p2[2].t == LOAD) and (p[0].rs == p2[2].dest))) {
+                    ciclos_branch += stall(1,1);
+                }
+
+            } else if(p[0].t == BRANCH) {
+                /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 é load ou outra e existe dependências para algum dos
+                registradores usados no branch */
+                if (
+                    ((p[1].t == LOAD) and ((p[0].rs == p[1].dest) or (p[0].rt == p[1].dest))) or
+                    ((p2[1].t == LOAD) and ((p[0].rs == p2[1].dest) or (p[0].rt == p2[1].dest)))
+                ) {
+                    ciclos_branch += stall(0,2);
+
+                } else if (
+                    ((p[1].t == OUTRAS) and ((p[0].rs == p[1].dest) or (p[0].rt == p[1].dest))) or
+                    ((p2[1].t == OUTRAS) and ((p[0].rs == p2[1].dest) or (p[0].rt == p2[1].dest)))
+                ) {
+                    ciclos_branch += stall(0,1);
+
+                /* Checa se a instrução no estágio após o próximo do pipeline 1 ou 2 é load e existe dependências para algum dos
+                registradores usados no branch */
+                } else if (
+                    ((p[2].t == LOAD) and ((p[0].rs == p[2].dest) or (p[0].rt == p[2].dest))) or 
+                    ((p2[2].t == LOAD) and ((p[0].rs == p2[2].dest) or (p[0].rt == p2[2].dest)))
+                ) {
+                    ciclos_branch += stall(1,1);
+                }
+            }
+        } else {
+        }
+    }
+#endif
     /* Insere uma instrução no pipeline e faz os testes de ciclos */
     void insere_instr(Instrucao instr) {
         int i;
 
+#ifndef SUPERESCALAR
         for (i = PIPELINE_SIZE - 1; i > 0; i--) {
             p[i] = p[i - 1];
         }
         p[0] = instr;
-
-        /* Considera que os jumps sempre dão stall de um ciclo, sem predição */
-        if (instr.t == JUMP) {
-            ciclos_jump++;
+#else
+        if (last_inserted == 2) {
+            for (i = PIPELINE_SIZE - 1; i > 0; i--) {
+                p[i] = p[i - 1];
+            }
+            p[0] = instr;
+            last_inserted = 1;
+        } else {
+            for (i = PIPELINE_SIZE - 1; i > 0; i--) {
+                p2[i] = p2[i - 1];
+            }
+            p2[0] = instr;
+            last_inserted = 2;
         }
-
+#endif
         /* Realiza as predições dos branches */
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
@@ -439,8 +539,11 @@ public:
 
 #endif
         }
-
+#ifndef SUPERESCALAR
         update();
+#else
+        update_superescalar();
+#endif
     }
 
     /* Imprime o pipeline */
