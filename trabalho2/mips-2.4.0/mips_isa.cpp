@@ -78,11 +78,13 @@ BP2bits preditor = SNT;
 #ifdef PIPE5
 
 #define PIPELINE_SIZE 5
+#define MISSPREDICT_PENALITY 1
 
 #else
 #ifdef PIPE7
 
 #define PIPELINE_SIZE 7
+#define MISSPREDICT_PENALITY 2
 
 #else
 #ifdef PIPE13
@@ -254,7 +256,7 @@ public:
             ) {
                 ciclos_branch += stall(0,1);
             } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                ciclos_branch += stall(1,1);
+                ciclos_branch += stall(0,1);
             }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
@@ -287,35 +289,30 @@ public:
             (p[1].t == OUTRAS or p[1].t == STORE) and 
             ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
         ) {
-            ciclos_load += stall(1,1);
+            ciclos_load += stall(1,2);
         } else if (
             (p[2].t == LOAD) and
             (p[1].t == LOAD) and
             (p[2].dest == p[1].rs)
         ) {
-            ciclos_load += stall(1,1);
+            ciclos_load += stall(1,2);
         }
 
         /* Checa se jump e branches que possuem um único registrador dão stall,
          * ou depois apenas branches que possuem os dois registradores */
         if (
-            ((p[0].t == JUMP) and (p[0].rs != -1)) or (
-                (p[0].t == BRANCH) and (p[0].rt == -1)
-            )
+            ((p[0].t ==  JUMP ) and (p[0].rs != -1)) or 
+            ((p[0].t == BRANCH) and (p[0].rt == -1))
         ) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
             if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
+                ciclos_branch += stall(0,3);
+            } else if ((p[1].t == OUTRAS) and (p[0].rs == p[1].dest)){
                 ciclos_branch += stall(0,2);
-            } else if (
-                (p[1].t == OUTRAS) and (
-                    (p[0].rs == p[1].dest)
-                )
-            ) {
-                ciclos_branch += stall(0,1);
-            } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                ciclos_branch += stall(1,1);
-            }
+                } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
+                    ciclos_branch += stall(0,2);
+                }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
@@ -324,19 +321,19 @@ public:
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_branch += stall(0,2);
+                ciclos_branch += stall(0,3);
             } else if (
                 (p[1].t == OUTRAS) and (
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_branch += stall(0,1);
+                ciclos_branch += stall(0,2);
             } else if (
                 (p[2].t == LOAD) and (
                     (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
                 )
             ) {
-                ciclos_branch += stall(1,1);
+                ciclos_branch += stall(0,2);
             }
         }
 
@@ -598,13 +595,13 @@ public:
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
             if (tomado == false) {
-                ciclos_misspredict++;
+                ciclos_misspredict+=MISSPREDICT_PENALITY;
             }
 #else
 
 #ifdef PREDITOR_ALWAYS_NOT_TAKEN
             if (tomado == true) {
-                ciclos_misspredict++;
+                ciclos_misspredict+=MISSPREDICT_PENALITY;
             }
 #else
 
@@ -612,20 +609,20 @@ public:
             if (tomado == true) {
                 if (preditor == SNT) {
                     preditor = WNT;
-                    ciclos_misspredict++;
+                    ciclos_misspredict+=MISSPREDICT_PENALITY;
                 } else if (preditor == WNT) {
                     preditor = WT;
-                    ciclos_misspredict++;
+                    ciclos_misspredict+=MISSPREDICT_PENALITY;
                 } else {
                     preditor = ST;
                 }
             } else {
                 if (preditor == ST) {
                     preditor = WT;
-                    ciclos_misspredict++;
+                    ciclos_misspredict+=MISSPREDICT_PENALITY;
                 } else if (preditor == WT) {
                     preditor = WNT;
-                    ciclos_misspredict++;
+                    ciclos_misspredict+=MISSPREDICT_PENALITY;
                 } else {
                     preditor = SNT;
                 }
