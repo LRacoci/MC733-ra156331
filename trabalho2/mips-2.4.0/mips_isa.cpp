@@ -47,15 +47,6 @@ using namespace mips_parms;
 static int processors_started = 0;
 #define DEFAULT_STACK_SIZE (256*1024)
 
-/* Contadores de ciclos */
-unsigned long int instrucoes = 0;
-unsigned long int ciclos_arit = 0;
-unsigned long int ciclos_load = 0;
-unsigned long int ciclos_branch = 0;
-unsigned long int ciclos_total = 4;
-unsigned long int ciclos_cache = 0;
-unsigned long int ciclos_jump = 0;
-unsigned long int ciclos_misspredict = 0;
 
 /* Variáveis que indicam se o branch atual foi tomado e os dois bits */
 bool tomado = false;
@@ -95,6 +86,15 @@ BP2bits preditor = SNT;
 #endif
 #endif
 
+/* Contadores de ciclos */
+unsigned long int instrucoes = 0;
+unsigned long int ciclos_arit = 0;
+unsigned long int ciclos_load = 0;
+unsigned long int ciclos_branch = 0;
+unsigned long int ciclos_total = PIPELINE_SIZE-1;
+unsigned long int ciclos_cache = 0;
+unsigned long int ciclos_jump = 0;
+unsigned long int ciclos_misspredict = 0;
 
 /* Espaço de nomes do C++ */
 using namespace std;
@@ -336,8 +336,6 @@ public:
                 ciclos_branch += stall(0,2);
             }
         }
-
-
 #else
 #ifdef PIPE13
         /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
@@ -398,8 +396,6 @@ public:
                 ciclos_branch += stall(1,1);
             }
         }
-
-
 #endif
 #endif
 #endif
