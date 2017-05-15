@@ -328,7 +328,7 @@ public:
                     (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
                 )
             ) {
-                ciclos_branch += stall(0,2);
+                ciclos_branch += stall(0,1); // Aqui fica igual o de 5 estagios
             } else if (
                 (p[2].t == LOAD) and (
                     (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
