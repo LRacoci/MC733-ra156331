@@ -81,6 +81,7 @@ BP2bits preditor = SNT;
 #ifdef PIPE13
 
 #define PIPELINE_SIZE 13
+#define MISSPREDICT_PENALITY 13
 
 #endif
 #endif
