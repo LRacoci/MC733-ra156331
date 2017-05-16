@@ -78,6 +78,6 @@ Também serão considerados modelos de pipelines de 13 estágios.
   $ cd ..
   $ acsim mips.ac -abi -s
   $ vim Makefile
-Adicionar "d4-t/libd4.a" no final da linha que começa com LIBS
+Adicionar "d4-7/libd4.a" no final da linha que começa com LIBS
   $ make
   $ ./mips.x --load=susan input_small.pgm output_small.smoothing.pgm -s
