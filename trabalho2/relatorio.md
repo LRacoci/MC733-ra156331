@@ -12,7 +12,7 @@ Esse projeto visa estudar o desempenho de um processador comparando diferentes c
 
 ## Configurações utilizadas
 
-As diferentes configurações tem como variações o tamanho do pipeline e o preditor de branches utilizado. Para todas as configurações foi testado diferentes configurações da cache L1, variando o tamanho da cache, o tamanho do bloco e a associatividade, para encontrar a melhor configuração. Foi utilizado o Dinero IV para gerar as informações de cache durante a simulação.
+As diferentes configurações tem como variações o tamanho do pipeline e o preditor de branches utilizado. Para a configuração 1 abaixo, foi testado diferentes configurações da cache L1, variando o tamanho da cache, o tamanho do bloco e a associatividade, para encontrar a melhor configuração para a cache e esta  foi utilizada nas configurações abaixo de 2 a 10. Foi utilizado o Dinero IV para gerar as informações de cache durante a simulação.
 
 - Configuração 1: Pipeline de 5 estágios simples, preditor not always taken.
 
