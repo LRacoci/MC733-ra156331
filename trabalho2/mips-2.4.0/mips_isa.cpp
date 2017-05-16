@@ -410,14 +410,16 @@ public:
 
             /* Checa se uma instrução ocorreu logo depois de um load no pipeline 1 ou no 2 e ocorre dependência de um dos seus registradores */
             if (((p[2].t == LOAD) and (p[1].t == OUTRAS or p[1].t == STORE) and ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))) or
-                ((p2[1].t == LOAD) and (p[1].t == OUTRAS or p[1].t == STORE) and ((p2[1].dest == p[1].rs) or (p2[1].dest == p[1].rt)))
+                ((p2[2].t == LOAD) and (p[1].t == OUTRAS or p[1].t == STORE) and ((p2[2].dest == p[1].rs) or (p2[2].dest == p[1].rt)))
             ) {
                 ciclos_load += stall(1,1);
+                stall_p2(1,1);
             /* Checa se ocorreu um load após o outro no pipeline 1 ou 2 e existe dependência de registrador */
             } else if (((p[2].t == LOAD) and (p[1].t == LOAD) and (p[2].dest == p[1].rs)) or
-                ((p2[1].t == LOAD) and (p[1].t == LOAD) and (p2[1].dest == p[1].rs))
+                ((p2[2].t == LOAD) and (p[1].t == LOAD) and (p2[2].dest == p[1].rs))
             ) {
                 ciclos_load += stall(1,1);
+                stall_p2(1,1);
             }
 
             /* Checa se jump e branches que possuem um único registrador dão stall,
@@ -429,14 +431,17 @@ public:
             ) {
                 /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 é load ou outras instruções e existe dependência.
                 Depois checa se a instrução no estágio após o próximo do pipeline 1 ou 2 é load e existe dependência */
-                if (((p[1].t == LOAD) and (p[0].rs == p[1].dest)) or ((p2[0].t == LOAD) and (p[0].rs == p2[0].dest))) {
+                if (((p[1].t == LOAD) and (p[0].rs == p[1].dest)) or ((p2[1].t == LOAD) and (p[0].rs == p2[1].dest))) {
                     ciclos_branch += stall(0,2);
+                    stall_p2(0,2);
                 } else if (
-                    ((p[1].t == OUTRAS) and ((p[0].rs == p[1].dest))) or ((p2[0].t == OUTRAS) and ((p[0].rs == p2[0].dest)))
+                    ((p[1].t == OUTRAS) and ((p[0].rs == p[1].dest))) or ((p2[1].t == OUTRAS) and ((p[0].rs == p2[1].dest)))
                 ) {
                     ciclos_branch += stall(0,1);
-                } else if (((p[2].t == LOAD) and (p[0].rs == p[2].dest)) or ((p2[1].t == LOAD) and (p[0].rs == p2[1].dest))) {
+                    stall_p2(0,1);
+                } else if (((p[2].t == LOAD) and (p[0].rs == p[2].dest)) or ((p2[2].t == LOAD) and (p[0].rs == p2[2].dest))) {
                     ciclos_branch += stall(1,1);
+                    stall_p2(1,1);
                 }
 
             } else if(p[0].t == BRANCH) {
@@ -444,23 +449,26 @@ public:
                 registradores usados no branch */
                 if (
                     ((p[1].t == LOAD) and ((p[0].rs == p[1].dest) or (p[0].rt == p[1].dest))) or
-                    ((p2[0].t == LOAD) and ((p[0].rs == p2[0].dest) or (p[0].rt == p2[0].dest)))
+                    ((p2[1].t == LOAD) and ((p[0].rs == p2[1].dest) or (p[0].rt == p2[1].dest)))
                 ) {
                     ciclos_branch += stall(0,2);
+                    stall_p2(0,2);
 
                 } else if (
                     ((p[1].t == OUTRAS) and ((p[0].rs == p[1].dest) or (p[0].rt == p[1].dest))) or
-                    ((p2[0].t == OUTRAS) and ((p[0].rs == p2[0].dest) or (p[0].rt == p2[0].dest)))
+                    ((p2[1].t == OUTRAS) and ((p[0].rs == p2[1].dest) or (p[0].rt == p2[1].dest)))
                 ) {
                     ciclos_branch += stall(0,1);
+                    stall_p2(0,1);
 
-                /* Checa se a instrução no estágio após a próxima do pipeline 1 ou 2 é load e existe dependência para algum dos
+                /* Checa se a instrução no estágio após o próximo do pipeline 1 ou 2 é load e existe dependência para algum dos
                 registradores usados no branch */
                 } else if (
                     ((p[2].t == LOAD) and ((p[0].rs == p[2].dest) or (p[0].rt == p[2].dest))) or 
-                    ((p2[1].t == LOAD) and ((p[0].rs == p2[1].dest) or (p[0].rt == p2[1].dest)))
+                    ((p2[2].t == LOAD) and ((p[0].rs == p2[2].dest) or (p[0].rt == p2[2].dest)))
                 ) {
                     ciclos_branch += stall(1,1);
+                    stall_p2(1,1);
                 }
             }
 
@@ -469,14 +477,15 @@ public:
             /* Se uma instrução OUTRAS ou STORE entrou no pipeline 2 junto com uma de LOAD no pipeline 1 e ocorre dependência de registrador */
             if ((p[1].t == LOAD) and (p2[1].t == OUTRAS or p2[1].t == STORE) and ((p[1].dest == p2[1].rs) or (p[1].dest == p2[1].rt))) {
                 ciclos_load += stall_p2(1,2);
-            
+                stall(0,2);
             /* Se uma instrução OUTRAS ou STORE entrou no pipeline 2 junto com uma de OUTRAS no pipeline 1 e ocorre dependência de registrador */
             } else if ((p[1].t == OUTRAS) and (p2[1].t == OUTRAS or p2[1].t == STORE) and ((p[1].dest == p2[1].rs) or (p[1].dest == p2[1].rt))) {
                 ciclos_arit += stall_p2(1,1);
-
+                stall(0,1);
             /* Se uma instrução de LOAD entrou no pipeline 2 junto com uma de LOAD no pipeline 1 e ocorre dependências de registrador */
             } else if ((p[1].t == LOAD) and (p2[1].t == LOAD) and ((p[1].dest == p2[1].rs))) {
                 ciclos_load += stall_p2(1,2);
+                stall(0,2);
             }
 
             /* Checa se uma instrução ocorreu logo depois de um LOAD no pipeline 1 ou no 2 e ocorre dependência de um dos seus registradores */
@@ -484,12 +493,14 @@ public:
                 ((p2[2].t == LOAD) and (p2[1].t == OUTRAS or p2[1].t == STORE) and ((p2[2].dest == p2[1].rs) or (p2[2].dest == p2[1].rt)))
             ) {
                 ciclos_load += stall_p2(1,1);
+                stall(1,1);
 
             /* Checa se ocorreu um LOAD após o outro no pipeline 1 ou 2 e existe dependência de registrador */
             } else if (((p[2].t == LOAD) and (p2[1].t == LOAD) and (p[2].dest == p2[1].rs)) or
                 ((p2[2].t == LOAD) and (p2[1].t == LOAD) and (p2[2].dest == p2[1].rs))
             ) {
                 ciclos_load += stall_p2(1,1);
+                stall(1,1);
             }
 
             /* Checa se jump e branches que possuem um único registrador dão stall,
@@ -503,9 +514,22 @@ public:
                 if ((p[0].t == LOAD) and (p2[0].rs == p[0].dest)) {
                     ciclos_branch += stall_p2(0,3);
 
+                    /* É necessário dar stall a partir da posíção zero (incluindo ela), inserindo instruções de bolha simulando para fazer isso */
+                    for(int i = 0; i < 3; i++) {
+                        insere_instr(BUBBLE);
+                        last_inserted = 2;
+                    }
+
                 /* Checa se a instrução que entrou junto com o branch ou jump no pipeline 1 escreve no registrador que o branch ou jump utiliza */
                 } else if ((p[0].t == OUTRAS) and (p2[0].rs == p[0].dest)) {
                     ciclos_branch += stall_p2(0,2);
+
+                    /* É necessário dar stall a partir da posíção zero (incluindo ela), inserindo instruções de bolha simulando para fazer isso */
+                    for(int i = 0; i < 2; i++) {
+                        insere_instr(BUBBLE);
+                        last_inserted = 2;
+                    }
+
                 }
 
                 /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 é load ou outras instruções e existe dependência.
@@ -513,15 +537,18 @@ public:
                 if (((p[1].t == LOAD) and (p2[0].rs == p[1].dest)) or ((p2[1].t == LOAD) and (p2[0].rs == p2[1].dest))) {
 
                     ciclos_branch += stall_p2(0,2);
+                    stall(0,2);
 
                 } else if (
                     ((p[1].t == OUTRAS) and ((p2[0].rs == p[1].dest))) or ((p2[1].t == OUTRAS) and ((p2[0].rs == p2[1].dest)))
                 ) {
                     ciclos_branch += stall_p2(0,1);
+                    stall(0,1);
 
                 } else if (((p[2].t == LOAD) and (p[0].rs == p[2].dest)) or ((p2[2].t == LOAD) and (p2[0].rs == p2[2].dest))) {
 
                     ciclos_branch += stall_p2(1,1);
+                    stall(1,1);
                 }
 
             } else if(p2[0].t == BRANCH) {
@@ -532,11 +559,22 @@ public:
                 ) {
                     ciclos_branch += stall_p2(0,3);
 
+                /* É necessário dar stall a partir da posíção zero (incluindo ela), inserindo instruções de bolha simulando para fazer isso */
+                for(int i = 0; i < 3; i++) {
+                    insere_instr(BUBBLE);
+                    last_inserted = 2;
+                }
+
                 /* Checa se a instrução que entrou junto com o branch no pipeline 1 escreve em registrador que o branch utiliza */
                 } else if (
                     (p[0].t == OUTRAS) and ((p2[0].rs == p[0].dest) or (p2[0].rt == p[0].dest))
                 ) {
-                    ciclos_branch += stall_p2(0,2);
+                    ciclos_branch += stall_p2(0,2);  
+                    for(int i = 0; i < 3; i++) {
+                        insere_instr(BUBBLE);
+                        last_inserted = 2;
+                    }
+
 
                 /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 é do tipo load e tem dependência de registrador */
                 } else if (
@@ -544,6 +582,7 @@ public:
                     ((p2[1].t == LOAD) and ((p2[0].rs == p2[1].dest) or (p2[0].rt == p2[1].dest)))
                 ) {
                     ciclos_branch += stall_p2(0,2);
+                    stall(0,2);
 
                 /* Checa se a instrução no próximo estágio do pipeline 1 ou 2 escreve em um registrador que o branch utiliza */
                 } else if (
@@ -551,6 +590,7 @@ public:
                     ((p2[1].t == OUTRAS) and ((p2[0].rs == p2[1].dest) or (p2[0].rt == p2[1].dest)))
                 ) {
                     ciclos_branch += stall_p2(0,1);
+                    stall(0,1);
 
                 /* Checa se a instrução no estágio após o próximo no pipeline 1 ou 2 é load e existe dependência para algum dos
                 registradores que o branch utiliza */
@@ -559,6 +599,7 @@ public:
                     ((p2[2].t == LOAD) and ((p2[0].rs == p2[2].dest) or (p2[0].rt == p2[2].dest)))
                 ) {
                     ciclos_branch += stall_p2(1,1);
+                    stall(1,1);
                 }
             }
         }
@@ -633,7 +674,9 @@ public:
 #ifndef SUPERESCALAR
         update();
 #else
-        update_superescalar();
+        if(last_inserted == 2) {
+            update_superescalar();
+        }
 #endif
     }
 
