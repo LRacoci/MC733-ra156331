@@ -54,15 +54,15 @@ enum BP2bits {SNT, WNT, WT, ST};
 BP2bits preditor = SNT;
 
 /* Define qual preditor será utilizado, descomente aquele que será utilizado */
-#define PREDITOR_ALWAYS_TAKEN
-//#define PREDITOR_ALWAYS_NOT_TAKEN
+//#define PREDITOR_ALWAYS_TAKEN
+#define PREDITOR_ALWAYS_NOT_TAKEN
 //#define PREDITOR_2_BITS
 
 #define SUPERESCALAR
 
 /* Define tamanho do pipeline */
-#define PIPE5
-//#define PIPE7
+//#define PIPE5
+#define PIPE7
 //#define PIPE13
 
 
@@ -284,19 +284,34 @@ public:
         }
 #else
 #ifdef PIPE7
-        /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
-        if (
-            (p[2].t == LOAD) and 
-            (p[1].t == OUTRAS or p[1].t == STORE) and 
-            ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
-        ) {
-            ciclos_load += stall(1,2);
-        } else if (
-            (p[2].t == LOAD) and
-            (p[1].t == LOAD) and
-            (p[2].dest == p[1].rs)
-        ) {
-            ciclos_load += stall(1,2);
+        
+        if (p[2].t == LOAD) {
+            // Caso novo: 
+            /* Checa stall no load seguido qualquer coisa seguido por 
+             * instrução que usa o load, insere 1 bolha*/
+            if (
+                (p[0].t == OUTRAS or p[0].t == STORE) and 
+                ((p[2].dest == p[0].rs) or (p[2].dest == p[0].rt))
+            ){
+                ciclos_load += stall(0,1);
+            } else if (
+                (p[0].t == LOAD) and
+                (p[2].dest == p[0].rs)
+            ) {
+                ciclos_load += stall(0,1);
+            // Caso adaptado do de 5 estágios
+            /* Checa stall no load seguido por instrução que usa load, e insere 2 bolhas */
+            } else if (
+                (p[1].t == OUTRAS or p[1].t == STORE) and 
+                ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
+            ) {
+                ciclos_load += stall(1,2);
+            } else if (
+                (p[1].t == LOAD) and
+                (p[2].dest == p[1].rs)
+            ) {
+                ciclos_load += stall(1,2);
+            }
         }
 
         /* Checa se jump e branches que possuem um único registrador dão stall,
@@ -307,13 +322,33 @@ public:
         ) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
-            if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
+            if (
+                (p[1].t == LOAD) and (
+                    p[0].rs == p[1].dest
+                )
+            ) {
                 ciclos_branch += stall(0,3);
-            } else if ((p[1].t == OUTRAS) and (p[0].rs == p[1].dest)){
+            } else if (
+                (p[1].t == OUTRAS) and (
+                    p[0].rs == p[1].dest 
+                )
+            ){
                 ciclos_branch += stall(0,1); // Aqui fica igual o de 5 estagios
-                } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                    ciclos_branch += stall(0,2);
-                }
+            } else if (
+                (p[2].t == LOAD) and (
+                    p[0].rs == p[2].dest
+                )
+            ) {
+                ciclos_branch += stall(0,2);
+            /* Caso novo : Load seguido de duas instruções quaisquer 
+             * seguido de jump com dependencia do Load */
+            } else if (
+                (p[3].t == LOAD) and (
+                    p[0].rs == p[3].dest
+                )
+            ) {
+                ciclos_branch += stall(0,1);
+            }
         } else if (p[0].t == BRANCH) {
             /* Checa load seguido de branch, outras instruções seguidas de branch
              * e branch precedido por qualquer coisa que é precedida por branch */
@@ -335,6 +370,14 @@ public:
                 )
             ) {
                 ciclos_branch += stall(0,2);
+            /* Caso novo: Load seguido de duas instruções quaisquer 
+             * seguido de Branch com dpendencia do Load */
+            } else if (
+                (p[3].t == LOAD) and (
+                    (p[0].rs == p[3].dest) or (p[0].rt == p[3].dest)
+                )
+            ) {
+                ciclos_branch += stall(0,1);
             }
         }
 #else
