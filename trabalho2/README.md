@@ -72,12 +72,12 @@ Também serão considerados modelos de pipelines de 13 estágios.
 - Pipeline de 5 estágios superescalar dual-issue, melhor configuração de L1, preditor de 2 bits.
 
 ## Para rodar os testes
-  $ cd d4-7
-  $ ./configure
-  $ make
-  $ cd ..
-  $ acsim mips.ac -abi -s
-  $ vim Makefile
-Adicionar "d4-t/libd4.a" no final da linha que começa com LIBS
-  $ make
-  $ ./mips.x --load=susan input_small.pgm output_small.smoothing.pgm -s
+    $ cd d4-7
+    $ ./configure
+    $ make
+    $ cd ..
+    $ acsim mips.ac -abi -s
+    $ vim Makefile
+Adicionar "d4-7/libd4.a" no final da linha que começa com LIBS
+    $ make
+    $ ./mips.x --load=susan input_small.pgm output_small.smoothing.pgm -s
