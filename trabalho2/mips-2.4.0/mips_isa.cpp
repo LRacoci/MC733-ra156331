@@ -107,8 +107,7 @@ unsigned long int ciclos_misspredict = 0;
 using namespace std;
 
 /* Variáveis do dinero */
-d4cache *Memi, *Memd;
-d4cache *L1i, *L1d;
+d4cache *Mem, *L2, *L1i, *L1d;
 
 /* Enumerado que representa o tipo da instrução */
 enum Tipo {OUTRAS, LOAD, STORE, BRANCH, JUMP, BUBBLE};
@@ -734,10 +733,13 @@ ostream& operator<<(ostream& os, const Pipeline& p) {
 /* Pipeline */
 Pipeline pip;
 
-/* Parâmetros da Cache L1 */
-#define CACHE_SIZE 15
-#define CACHE_ASSOC 4
-#define CACHE_BLOCK_SIZE 4
+/* Parâmetros das Cache L1 e L2 */
+#define CACHE_L1_SIZE 12
+#define CACHE_L1_ASSOC 4
+#define CACHE_L1_BLOCK_SIZE 4
+#define CACHE_L2_SIZE 18
+#define CACHE_L2_ASSOC 4
+#define CACHE_L2_BLOCK_SIZE 4
 
 /* Função que faz a leitura da cache com o dinero */
 void doread(unsigned int addr, d4cache* Cache) {
@@ -786,30 +788,40 @@ void ac_behavior(begin) {
     npc = ac_pc + 4;
     
     /* Inicializa as caches de instrução e de dados do dinero */
-    Memi = d4new(0);
-    L1i = d4new(Memi);
-    L1i->name = "L1i";
-    L1i->lg2blocksize = CACHE_BLOCK_SIZE;
+    Mem = d4new(0);
+    L2 = d4new(Mem);
+    L2->name = (char*)"L2";
+    L2->lg2blocksize = CACHE_L2_BLOCK_SIZE;
+    L2->lg2subblocksize = 0;
+    L2->lg2size = CACHE_L2_SIZE;
+    L2->assoc = CACHE_L2_ASSOC;
+    L2->replacementf = d4rep_lru;
+    L2->prefetchf = d4prefetch_none;
+    L2->wallocf = d4walloc_always;
+    L2->wbackf = d4wback_always;
+    L2->name_replacement = L2->name_prefetch = L2->name_walloc = L2->name_wback = (char*)"L2";
+    L1i = d4new(L2);
+    L1i->name = (char*)"L1i";
+    L1i->lg2blocksize = CACHE_L1_BLOCK_SIZE;
     L1i->lg2subblocksize = 0;
-    L1i->lg2size = CACHE_SIZE;
-    L1i->assoc = CACHE_ASSOC;
+    L1i->lg2size = CACHE_L1_SIZE;
+    L1i->assoc = CACHE_L1_ASSOC;
     L1i->replacementf = d4rep_lru;
     L1i->prefetchf = d4prefetch_none;
     L1i->wallocf = d4walloc_always;
     L1i->wbackf = d4wback_always;
-    L1i->name_replacement = L1i->name_prefetch = L1i->name_walloc = L1i->name_wback = "L1i";
-    Memd = d4new(0);
-    L1d = d4new(Memd);
-    L1d->name = "L1d";
-    L1d->lg2blocksize = CACHE_BLOCK_SIZE;
+    L1i->name_replacement = L1i->name_prefetch = L1i->name_walloc = L1i->name_wback = (char*)"L1i";
+    L1d = d4new(L2);
+    L1d->name = (char*)"L1d";
+    L1d->lg2blocksize = CACHE_L1_BLOCK_SIZE;
     L1d->lg2subblocksize = 0;
-    L1d->lg2size = CACHE_SIZE;
-    L1d->assoc = CACHE_ASSOC;
+    L1d->lg2size = CACHE_L1_SIZE;
+    L1d->assoc = CACHE_L1_ASSOC;
     L1d->replacementf = d4rep_lru;
     L1d->prefetchf = d4prefetch_none;
     L1d->wallocf = d4walloc_always;
     L1d->wbackf = d4wback_always;
-    L1d->name_replacement = L1d->name_prefetch = L1d->name_walloc = L1d->name_wback = "L1d";
+    L1d->name_replacement = L1d->name_prefetch = L1d->name_walloc = L1d->name_wback = (char*)"L1d";
     int r;
     if (0 != (r = d4setup())) {
         cerr << "Failed\n";
@@ -844,6 +856,8 @@ void ac_behavior(end) {
     cout << "L1i read miss/fetch: " << L1i->miss[D4XREAD] << "/" << L1i->fetch[D4XREAD] << endl;
     cout << "L1d read miss/fetch: " << L1d->miss[D4XREAD] << "/" << L1d->fetch[D4XREAD] << endl;
     cout << "L1d write miss/fetch: " << L1d->miss[D4XWRITE] << "/" << L1d->fetch[D4XWRITE] << endl;
+    cout << "L2 read miss/fetch: " << L2->miss[D4XREAD] << "/" << L2->fetch[D4XREAD] << endl;
+    cout << "L2 write miss/fetch: " << L2->miss[D4XWRITE] << "/" << L2->fetch[D4XWRITE] << endl;
 
     //cout << pip << endl;
 
