@@ -58,9 +58,8 @@ BP2bits preditor = SNT;
 #define PREDITOR_ALWAYS_NOT_TAKEN
 //#define PREDITOR_2_BITS
 
-#define SUPERESCALAR
-
-/* Define tamanho do pipeline */
+/* Define tipo do pipeline, apenas defina uma das abaixo */
+//#define SUPERESCALAR
 //#define PIPE5
 #define PIPE7
 //#define PIPE13
@@ -83,6 +82,13 @@ BP2bits preditor = SNT;
 #define PIPELINE_SIZE 13
 #define MISSPREDICT_PENALITY 13
 
+#else
+#ifdef SUPERESCALAR
+
+#define PIPELINE_SIZE 5
+#define MISSPREDICT_PENALITY 1
+
+#endif
 #endif
 #endif
 #endif
@@ -142,9 +148,9 @@ public:
                 (t ==  JUMP ) ? "JUMP"  : 
                 (t == BUBBLE) ? "BUBBLE": 
                 "ABSURDO",
-            rs,rt)
+            rs,rt);
         }else{
-            dbg_printf("%s(rs:%d, rt:%d)" 
+            dbg_printf("%s(rs:%d, rt:%d)", 
                 t == OUTRAS ? "OUTRAS":
                 t ==  LOAD  ?  "LOAD" :
                 t == STORE  ? "STORE" :
@@ -152,7 +158,7 @@ public:
                 t ==  JUMP  ? "JUMP"  : 
                 t == BUBBLE ? "BUBBLE": 
                 "ABSURDO",
-            rs,rt)
+            rs,rt);
         }
         
     }
@@ -283,6 +289,7 @@ public:
             }
         }
 #else
+
 #ifdef PIPE7
         
         if (p[2].t == LOAD) {
@@ -381,67 +388,13 @@ public:
             }
         }
 #else
-#ifdef PIPE13
-        /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
-        if (
-            (p[2].t == LOAD) and 
-            (p[1].t == OUTRAS or p[1].t == STORE) and 
-            ((p[2].dest == p[1].rs) or (p[2].dest == p[1].rt))
-        ) {
-            ciclos_load += stall(1,1);
-        } else if (
-            (p[2].t == LOAD) and
-            (p[1].t == LOAD) and
-            (p[2].dest == p[1].rs)
-        ) {
-            ciclos_load += stall(1,1);
-        }
 
-        /* Checa se jump e branches que possuem um único registrador dão stall,
-         * ou depois apenas branches que possuem os dois registradores */
-        if (
-            ((p[0].t == JUMP) and (p[0].rs != -1)) or (
-                (p[0].t == BRANCH) and (p[0].rt == -1)
-            )
-        ) {
-            /* Checa load seguido de branch, outras instruções seguidas de branch
-             * e branch precedido por qualquer coisa que é precedida por branch */
-            if ((p[1].t == LOAD) and (p[0].rs == p[1].dest)) {
-                ciclos_branch += stall(0,2);
-            } else if (
-                (p[1].t == OUTRAS) and (
-                    (p[0].rs == p[1].dest)
-                )
-            ) {
-                ciclos_branch += stall(0,1);
-            } else if ((p[2].t == LOAD) and (p[0].rs == p[2].dest)) {
-                ciclos_branch += stall(1,1);
-            }
-        } else if (p[0].t == BRANCH) {
-            /* Checa load seguido de branch, outras instruções seguidas de branch
-             * e branch precedido por qualquer coisa que é precedida por branch */
-            if (
-                (p[1].t == LOAD) and (
-                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
-                )
-            ) {
-                ciclos_branch += stall(0,2);
-            } else if (
-                (p[1].t == OUTRAS) and (
-                    (p[0].rs == p[1].dest) or (p[0].rt == p[1].dest)
-                )
-            ) {
-                ciclos_branch += stall(0,1);
-            } else if (
-                (p[2].t == LOAD) and (
-                    (p[0].rs == p[2].dest) or (p[0].rt == p[2].dest)
-                )
-            ) {
-                ciclos_branch += stall(1,1);
-            }
-        }
+#ifdef PIPE13
+        
 #endif
+
 #endif
+
 #endif
 
     }
@@ -671,6 +624,33 @@ public:
             last_inserted = 2;
         }
 #endif
+
+        /* Aumenta os stalls de jumps */
+        if (instr.t == JUMP) {
+#ifdef PIPE5
+            ciclos_jump += 1;
+#else
+
+#ifdef PIPE7
+            ciclos_jump += 2;
+#else
+
+#ifdef PIPE13
+            ciclos_jump += 13;
+
+#else
+
+#ifdef SUPERESCALAR
+            ciclos_jump += 1;
+#endif
+
+#endif
+
+#endif
+
+#endif      
+        }
+
         /* Realiza as predições dos branches */
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
@@ -716,7 +696,7 @@ public:
 #ifndef SUPERESCALAR
         update();
 #else
-        if(last_inserted == 2) {
+        if (last_inserted == 2) {
             update_superescalar();
         }
 #endif
@@ -755,8 +735,8 @@ ostream& operator<<(ostream& os, const Pipeline& p) {
 Pipeline pip;
 
 /* Parâmetros da Cache L1 */
-#define CACHE_SIZE 16
-#define CACHE_ASSOC 2
+#define CACHE_SIZE 15
+#define CACHE_ASSOC 4
 #define CACHE_BLOCK_SIZE 4
 
 /* Função que faz a leitura da cache com o dinero */
