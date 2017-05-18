@@ -47,9 +47,9 @@ Para poder analisar o desempenho das diferentes configurações foram  escolhido
 ## Programas utilizados
 Foram executados os seguintes programas para todas as configurações para que fosse possível avaliar os eventos citados:
 
-- Rijndael Coder Large.
-- Sha Small.
-- Basic Math Small.
+- Dijkstra Large
+- Sha Small
+- Susan Smoothing Small
 
 Esses programas estão presentes no Dinero IV.
 

@@ -45,9 +45,9 @@ Também serão considerados modelos de pipelines de 13 estágios.
 - L1: Variando os parâmetros: Tamanho da cache, tamanho do bloco e associatividade.
 
 ## Programas
-- rijndael coder large
-- sha small
-- basic math small
+- Dijkstra Large
+- Sha Small
+- Susan Smoothing Small
 
 ## Eventos
 
