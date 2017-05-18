@@ -60,8 +60,8 @@ BP2bits preditor = SNT;
 
 /* Define tipo do pipeline, apenas defina uma das abaixo */
 //#define SUPERESCALAR
-//#define PIPE5
-#define PIPE7
+#define PIPE5
+//#define PIPE7
 //#define PIPE13
 
 

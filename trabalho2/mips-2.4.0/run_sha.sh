@@ -1,0 +1,1 @@
+./mips.x --load=sha sinput_small.asc
