@@ -26,7 +26,7 @@ Os endereços que foram utilizados foram extraídos das variáveis do processado
 
 Abaixo estão listadas as 1
 
-- Configuração 1: Pipeline de 5 estágios simples, preditor not always taken.
+- Configuração 1: Pipeline de 5 estágios simples, preditor always not taken.
 
 - Configuração 2: Pipeline de 5 estágios simples, preditor always taken.
 
@@ -38,7 +38,7 @@ Abaixo estão listadas as 1
 
 - Configuração 6: Pipeline de 7 estágios simples, preditor 2 bits.
 
-- Configuração 7: Pipeline de 5 estágios superescalar dual issue, preditor not always taken.
+- Configuração 7: Pipeline de 5 estágios superescalar dual issue, preditor always not taken.
 
 - Configuração 8: Pipeline de 5 estágios superescalar dual issue, preditor always taken.
 

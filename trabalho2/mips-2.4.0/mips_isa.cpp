@@ -32,7 +32,7 @@ extern "C" {
 #include <vector>
 
 //If you want debug information for this model, uncomment next line
-//#define DEBUG_MODEL
+#define DEBUG_MODEL
 #include "ac_debug_model.H"
 
 
@@ -59,9 +59,9 @@ BP2bits preditor = SNT;
 //#define PREDITOR_2_BITS
 
 /* Define tipo do pipeline, apenas defina uma das abaixo */
-//#define SUPERESCALAR
+#define SUPERESCALAR
 //#define PIPE5
-#define PIPE7
+//#define PIPE7
 //#define PIPE13
 
 
@@ -69,21 +69,18 @@ BP2bits preditor = SNT;
 
 #define PIPELINE_SIZE 5
 #define MISSPREDICT_PENALTY 1
-#define BRANCH_STALL 1
 
 #else
 #ifdef PIPE7
 
 #define PIPELINE_SIZE 7
-#define MISSPREDICT_PENALTY 1
-#define BRANCH_STALL 2
+#define MISSPREDICT_PENALTY 2
 
 #else
 #ifdef PIPE13
 
 #define PIPELINE_SIZE 13
 #define MISSPREDICT_PENALTY 13
-#define BRANCH_STALL 0
 
 #else
 #ifdef SUPERESCALAR
@@ -640,11 +637,11 @@ public:
             ) {
                 ciclos_branch += stall_p2(0,3);
 
-            /* É necessário dar stall a partir da posíção zero (incluindo ela), inserindo instruções de bolha simulando para fazer isso */
-            for(int i = 0; i < 3; i++) {
-                insere_instr(BUBBLE);
-                last_inserted = 2;
-            }
+                /* É necessário dar stall a partir da posíção zero (incluindo ela), inserindo instruções de bolha simulando para fazer isso */
+                for(int i = 0; i < 3; i++) {
+                    insere_instr(BUBBLE);
+                    last_inserted = 2;
+                }
 
             /* Checa se a instrução que entrou junto com o branch no pipeline 1 escreve em registrador que o branch utiliza */
             } else if (
@@ -688,7 +685,7 @@ public:
 #endif
     /* Insere uma instrução no pipeline e faz os testes de ciclos */
     void insere_instr(Instrucao instr) {
-        int i;
+        int i, aux_branch;
 
 #ifndef SUPERESCALAR
         for (i = PIPELINE_SIZE - 1; i > 0; i--) {
@@ -711,24 +708,39 @@ public:
         }
 #endif
 
+#ifndef SUPERESCALAR
+        update();
+#else
+        if (last_inserted == 2) {
+            update_superescalar();
+        }
+#endif
+
+#ifndef SUPERESCALAR
+
         /* Aumenta os stalls de jumps */
         if (instr.t == JUMP) {
 #ifdef PIPE5
             ciclos_jump += 1;
+            for (i = PIPELINE_SIZE - 1; i > 0; i--) {
+                p[i] = p[i - 1];
+            }
+            p[0] = Instrucao(BUBBLE);
 #else
 
 #ifdef PIPE7
             ciclos_jump += 2;
+            for (i = PIPELINE_SIZE - 1; i > 1; i--) {
+                p[i] = p[i - 2];
+            }
+            p[0] = p[1] = Instrucao(BUBBLE);
 #else
 
 #ifdef PIPE13
             ciclos_jump += 13;
-
-#else
-
-#ifdef SUPERESCALAR
-            ciclos_jump += 1;
-#endif
+            for (i = 0; i < PIPELINE_SIZE; i++) {
+                p[i] = Instrucao(BUBBLE);
+            }
 
 #endif
 
@@ -737,40 +749,68 @@ public:
 #endif      
         }
 
+#else
+
+        if (last_inserted == 2 and (p[0].t == JUMP or p2[0].t == JUMP)) {
+            ciclos_jump += 1;
+            if (p[0].t == JUMP) {
+                for (i = PIPELINE_SIZE - 1; i > 1; i--) {
+                    p[i] = p[i - 2];
+                }
+                p[0] = p[1] = Instrucao(BUBBLE);
+                for (i = PIPELINE_SIZE - 1; i > 2; i--) {
+                    p2[i] = p2[i - 2];
+                }
+                p2[1] = p2[2] = Instrucao(BUBBLE);
+                ciclos_jump += 1;
+            } else  {
+                for (i = PIPELINE_SIZE - 1; i > 0; i--) {
+                    p[i] = p[i - 1];
+                    p2[i] = p2[i - 1];
+                }
+                p[0] = Instrucao(BUBBLE);
+                p2[0] = Instrucao(BUBBLE);
+            }
+        }
+
+#endif
+
         /* Realiza as predições dos branches */
+        aux_branch = 0;
+
+#ifndef SUPERESCALAR
+
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
-            ciclos_misspredict+=BRANCH_STALL;
             if (tomado == false) {
-                ciclos_misspredict+=MISSPREDICT_PENALTY;
+                aux_branch+=MISSPREDICT_PENALTY;
             }
 #else
 
 #ifdef PREDITOR_ALWAYS_NOT_TAKEN
             if (tomado == true) {
-                ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
+                aux_branch+=MISSPREDICT_PENALTY;
             }
 #else
 
 #ifdef PREDITOR_2_BITS
             if (tomado == true) {
-                ciclos_misspredict+=BRANCH_STALL;
                 if (preditor == SNT) {
                     preditor = WNT;
-                    ciclos_misspredict+=MISSPREDICT_PENALTY;
+                    aux_branch+=MISSPREDICT_PENALTY;
                 } else if (preditor == WNT) {
                     preditor = WT;
-                    ciclos_misspredict+=MISSPREDICT_PENALTY;
+                    aux_branch+=MISSPREDICT_PENALTY;
                 } else {
                     preditor = ST;
                 }
             } else {
                 if (preditor == ST) {
                     preditor = WT;
-                    ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
+                    aux_branch+=MISSPREDICT_PENALTY;
                 } else if (preditor == WT) {
                     preditor = WNT;
-                    ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
+                    aux_branch+=MISSPREDICT_PENALTY;
                 } else {
                     preditor = SNT;
                 }
@@ -781,15 +821,92 @@ public:
 
 #endif
 
-#endif
+            if (aux_branch != 0) {
+                for (i = PIPELINE_SIZE - 1; i >= aux_branch; i--) {
+                    p[i] = p[i - aux_branch];
+                }
+                for (i = 0; i < aux_branch; i++) {
+                    p[i] = Instrucao(BUBBLE);
+                }
+            }
+
+            ciclos_misspredict += aux_branch;
+
         }
-#ifndef SUPERESCALAR
-        update();
+
 #else
+
         if (last_inserted == 2) {
-            update_superescalar();
-        }
+            if (p[0].t == BRANCH or p2[0].t == BRANCH) {
+#ifdef PREDITOR_ALWAYS_TAKEN
+                if (tomado == false) {
+                    aux_branch+=MISSPREDICT_PENALTY;
+                }
+#else
+
+#ifdef PREDITOR_ALWAYS_NOT_TAKEN
+                if (tomado == true) {
+                    aux_branch+=MISSPREDICT_PENALTY;
+                }
+#else
+
+#ifdef PREDITOR_2_BITS
+                if (tomado == true) {
+                    if (preditor == SNT) {
+                        preditor = WNT;
+                        aux_branch+=MISSPREDICT_PENALTY;
+                    } else if (preditor == WNT) {
+                        preditor = WT;
+                        aux_branch+=MISSPREDICT_PENALTY;
+                    } else {
+                        preditor = ST;
+                    }
+                } else {
+                    if (preditor == ST) {
+                        preditor = WT;
+                        aux_branch+=MISSPREDICT_PENALTY;
+                    } else if (preditor == WT) {
+                        preditor = WNT;
+                        aux_branch+=MISSPREDICT_PENALTY;
+                    } else {
+                        preditor = SNT;
+                    }
+                }
 #endif
+
+#endif
+
+#endif
+
+                if (aux_branch != 0) {
+                    if (p[0].t == BRANCH) {
+                        for (i = PIPELINE_SIZE - 1; i > 1; i--) {
+                            p[i] = p[i - 2];
+                        }
+                        p[0] = p[1] = Instrucao(BUBBLE);
+                        for (i = PIPELINE_SIZE - 1; i > 2; i--) {
+                            p2[i] = p2[i - 2];
+                        }
+                        p2[1] = p2[2] = Instrucao(BUBBLE);
+                        aux_branch+=1;
+                    } else {
+                        for (i = PIPELINE_SIZE - 1; i > 0; i--) {
+                            p[i] = p[i - 1];
+                            p2[i] = p2[i - 1];
+                        }
+                        p[0] = Instrucao(BUBBLE);
+                        p2[0] = Instrucao(BUBBLE);
+                    }
+                }
+
+                ciclos_misspredict += aux_branch;
+            }
+
+        }
+
+#endif
+        //dbg_print();
+
     }
 
     /* Imprime o pipeline */
@@ -803,9 +920,14 @@ public:
     }
     /* Imprime o pipeline na dpuração */
     void dbg_print(){
-        dbg_printf("Histórico de instruções:");
+        dbg_printf("Histórico de instruções 1:\n");
         for (int i = 0; i < PIPELINE_SIZE; i++) {
             p[i].dbg_print();
+            dbg_printf("\n");
+        }
+        dbg_printf("Histórico de instruções 2:\n");
+        for (int i = 0; i < PIPELINE_SIZE; i++) {
+            p2[i].dbg_print();
             dbg_printf("\n");
         }
     }
