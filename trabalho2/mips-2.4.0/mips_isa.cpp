@@ -59,8 +59,8 @@ BP2bits preditor = SNT;
 //#define PREDITOR_2_BITS
 
 /* Define tipo do pipeline, apenas defina uma das abaixo */
-#define SUPERESCALAR
-//#define PIPE5
+//#define SUPERESCALAR
+#define PIPE5
 //#define PIPE7
 //#define PIPE13
 
@@ -925,11 +925,13 @@ public:
             p[i].dbg_print();
             dbg_printf("\n");
         }
+#ifdef SUPERESCALAR
         dbg_printf("Histórico de instruções 2:\n");
         for (int i = 0; i < PIPELINE_SIZE; i++) {
             p2[i].dbg_print();
             dbg_printf("\n");
         }
+#endif
     }
 
 };
@@ -1083,7 +1085,7 @@ void ac_behavior(end) {
     cout << "L2 read miss/fetch: " << L2->miss[D4XREAD] << "/" << L2->fetch[D4XREAD] << endl;
     cout << "L2 write miss/fetch: " << L2->miss[D4XWRITE] << "/" << L2->fetch[D4XWRITE] << endl;
 
-    cout << pip << endl;
+    //cout << pip << endl;
 
     dbg_printf("@@@ end behavior @@@\n");
 }
