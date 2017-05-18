@@ -32,7 +32,7 @@ extern "C" {
 #include <vector>
 
 //If you want debug information for this model, uncomment next line
-#define DEBUG_MODEL
+//#define DEBUG_MODEL
 #include "ac_debug_model.H"
 
 
@@ -61,32 +61,35 @@ BP2bits preditor = SNT;
 /* Define tipo do pipeline, apenas defina uma das abaixo */
 //#define SUPERESCALAR
 //#define PIPE5
-//#define PIPE7
-#define PIPE13
+#define PIPE7
+//#define PIPE13
 
 
 #ifdef PIPE5
 
 #define PIPELINE_SIZE 5
-#define MISSPREDICT_PENALITY 1
+#define MISSPREDICT_PENALTY 1
+#define BRANCH_STALL 1
 
 #else
 #ifdef PIPE7
 
 #define PIPELINE_SIZE 7
-#define MISSPREDICT_PENALITY 2
+#define MISSPREDICT_PENALTY 1
+#define BRANCH_STALL 2
 
 #else
 #ifdef PIPE13
 
 #define PIPELINE_SIZE 13
-#define MISSPREDICT_PENALITY 13
+#define MISSPREDICT_PENALTY 13
+#define BRANCH_STALL 0
 
 #else
 #ifdef SUPERESCALAR
 
 #define PIPELINE_SIZE 5
-#define MISSPREDICT_PENALITY 1
+#define MISSPREDICT_PENALTY 1
 
 #endif
 #endif
@@ -737,39 +740,43 @@ public:
         /* Realiza as predições dos branches */
         if (instr.t == BRANCH) {
 #ifdef PREDITOR_ALWAYS_TAKEN
+            ciclos_misspredict+=BRANCH_STALL;
             if (tomado == false) {
-                ciclos_misspredict+=MISSPREDICT_PENALITY;
+                ciclos_misspredict+=MISSPREDICT_PENALTY;
             }
 #else
 
 #ifdef PREDITOR_ALWAYS_NOT_TAKEN
             if (tomado == true) {
-                ciclos_misspredict+=MISSPREDICT_PENALITY;
+                ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
             }
 #else
 
 #ifdef PREDITOR_2_BITS
             if (tomado == true) {
+                ciclos_misspredict+=BRANCH_STALL;
                 if (preditor == SNT) {
                     preditor = WNT;
-                    ciclos_misspredict+=MISSPREDICT_PENALITY;
+                    ciclos_misspredict+=MISSPREDICT_PENALTY;
                 } else if (preditor == WNT) {
                     preditor = WT;
-                    ciclos_misspredict+=MISSPREDICT_PENALITY;
+                    ciclos_misspredict+=MISSPREDICT_PENALTY;
                 } else {
                     preditor = ST;
                 }
             } else {
                 if (preditor == ST) {
                     preditor = WT;
-                    ciclos_misspredict+=MISSPREDICT_PENALITY;
+                    ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
                 } else if (preditor == WT) {
                     preditor = WNT;
-                    ciclos_misspredict+=MISSPREDICT_PENALITY;
+                    ciclos_misspredict+=MISSPREDICT_PENALTY+BRANCH_STALL;
                 } else {
                     preditor = SNT;
                 }
             }
+#endif
+
 #endif
 
 #endif
