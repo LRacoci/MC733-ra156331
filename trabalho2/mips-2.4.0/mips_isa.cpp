@@ -32,7 +32,7 @@ extern "C" {
 #include <vector>
 
 //If you want debug information for this model, uncomment next line
-//#define DEBUG_MODEL
+#define DEBUG_MODEL
 #include "ac_debug_model.H"
 
 
@@ -59,8 +59,8 @@ BP2bits preditor = SNT;
 //#define PREDITOR_2_BITS
 
 /* Define tipo do pipeline, apenas defina uma das abaixo */
-//#define SUPERESCALAR
-#define PIPE5
+#define SUPERESCALAR
+//#define PIPE5
 //#define PIPE7
 //#define PIPE13
 
@@ -111,9 +111,6 @@ d4cache *Mem, *L2, *L1i, *L1d;
 
 /* Enumerado que representa o tipo da instrução */
 enum Tipo {OUTRAS, LOAD, STORE, BRANCH, JUMP, BUBBLE};
-
-/* Constantes do programa */
-#define CACHE_STALL 10
 
 /* Classe que representa uma instrução */
 class Instrucao {
@@ -597,6 +594,7 @@ public:
                 stall(1,1);
             }
         }
+        
     }
 #endif
     /* Insere uma instrução no pipeline e faz os testes de ciclos */
@@ -724,9 +722,16 @@ public:
 // Joga Pipeline pra uma stream de saída
 ostream& operator<<(ostream& os, const Pipeline& p) {  
     cout << "Histórico de instruções:" << endl;
+    cout << "Pipeline 1" << endl;
     for (int i = 0; i < PIPELINE_SIZE; i++) {
         os << p.p[i] << endl;
     }
+#ifdef SUPERESCALAR
+    cout << "Pipeline 2" << endl;
+    for (int i = 0; i < PIPELINE_SIZE; i++) {
+        os << p.p2[i] << endl;
+    }
+#endif
     return os;
 } 
 
@@ -740,6 +745,10 @@ Pipeline pip;
 #define CACHE_L2_SIZE 18
 #define CACHE_L2_ASSOC 4
 #define CACHE_L2_BLOCK_SIZE 4
+
+/* Stalls das caches */
+#define CACHE_L1_STALL 15
+#define CACHE_L2_STALL 100
 
 /* Função que faz a leitura da cache com o dinero */
 void doread(unsigned int addr, d4cache* Cache) {
@@ -839,10 +848,10 @@ void ac_behavior(begin) {
 
 //!Behavior called after finishing simulation
 void ac_behavior(end) {
-    ciclos_cache += (L1d->miss[D4XREAD] + L1d->miss[D4XWRITE] + L1i->miss[D4XREAD]) * CACHE_STALL;
+    ciclos_cache += (L1d->miss[D4XREAD] + L1d->miss[D4XWRITE] + L1i->miss[D4XREAD]) * CACHE_L1_STALL + (L2->miss[D4XREAD] + L2->miss[D4XWRITE]) * CACHE_L2_STALL;
 
 #ifdef SUPERESCALAR
-    ciclos_total = ciclos_total/2;
+    ciclos_total = (ciclos_total / 2) + 2;
 #endif
     ciclos_total += ciclos_arit + ciclos_load + ciclos_branch + ciclos_jump + ciclos_cache + ciclos_misspredict;
     cout << "Número total de instruções: " << instrucoes << endl;
