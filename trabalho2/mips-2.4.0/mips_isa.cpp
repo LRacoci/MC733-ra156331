@@ -59,10 +59,10 @@ BP2bits preditor = SNT;
 //#define PREDITOR_2_BITS
 
 /* Define tipo do pipeline, apenas defina uma das abaixo */
-#define SUPERESCALAR
+//#define SUPERESCALAR
 //#define PIPE5
 //#define PIPE7
-//#define PIPE13
+#define PIPE13
 
 
 #ifdef PIPE5
@@ -223,7 +223,6 @@ public:
 
     /* Contabiliza os ciclos devido a hazards e erros do branch */
     void update() {
-        int i;
 
 #ifdef PIPE5
         /* Checa stall no load seguido por instrução que usa load, e insere uma bolha */
@@ -387,6 +386,93 @@ public:
 
 #ifdef PIPE13
         
+        /* Checa hazards de dados durante a etapa de execução, e supondo que o resultado de uma operação apenas fica pronto durante o estágio de writeback */
+        if (p[0].t == OUTRAS or p[0].t == STORE) {
+            if ((p[1].dest != -1) and (p[1].dest == p[0].rs or p[1].dest == p[0].rt)) {
+                if (p[1].t == OUTRAS) {
+                    ciclos_arit += stall(0,4);
+                } else {
+                    ciclos_load += stall(0,4);
+                }
+            }
+            if ((p[2].dest != -1) and (p[2].dest == p[0].rs or p[2].dest == p[0].rt)) {
+                if (p[2].t == OUTRAS) {
+                    ciclos_arit += stall(1,3);
+                } else {
+                    ciclos_load += stall(1,3);
+                }
+            }
+            if ((p[3].dest != -1) and (p[3].dest == p[0].rs or p[3].dest == p[0].rt)) {
+                if (p[3].t == OUTRAS) {
+                    ciclos_arit += stall(2,2);
+                } else {
+                    ciclos_load += stall(2,2);
+                }
+            }
+            if ((p[4].dest != -1) and (p[4].dest == p[0].rs or p[4].dest == p[0].rt)) {
+                if (p[4].t == OUTRAS) {
+                    ciclos_arit += stall(3,1);
+                } else {
+                    ciclos_load += stall(3,1);
+                }
+            }
+        } else if (p[0].t == LOAD) {
+            if (p[1].dest != -1 and p[1].dest == p[0].rs) {
+                if (p[1].t == OUTRAS) {
+                    ciclos_arit += stall(0,4);
+                } else {
+                    ciclos_load += stall(0,4);
+                }
+            }
+            if (p[2].dest != -1 and p[2].dest == p[0].rs) {
+                if (p[2].t == OUTRAS) {
+                    ciclos_arit += stall(1,3);
+                } else {
+                    ciclos_load += stall(1,3);
+                }
+            }
+            if (p[3].dest != -1 and p[3].dest == p[0].rs) {
+                if (p[3].t == OUTRAS) {
+                    ciclos_arit += stall(2,2);
+                } else {
+                    ciclos_load += stall(2,2);
+                }
+            }
+            if (p[4].dest != -1 and p[4].dest == p[0].rs) {
+                if (p[4].t == OUTRAS) {
+                    ciclos_arit += stall(3,1);
+                } else {
+                    ciclos_load += stall(3,1);
+                }
+            }
+        } else if (((p[0].t ==  JUMP) and (p[0].rs != -1)) or ((p[0].t == BRANCH) and (p[0].rt == -1))) {
+            if (p[1].dest != -1 and p[1].dest == p[0].rs) {
+                ciclos_branch += stall(0,4);
+            }
+            if (p[2].dest != -1 and p[2].dest == p[0].rs) {
+                ciclos_branch += stall(1,3);
+            }
+            if (p[3].dest != -1 and p[3].dest == p[0].rs) {
+                ciclos_branch += stall(2,2);
+            }
+            if (p[4].dest != -1 and p[4].dest == p[0].rs) {
+                ciclos_branch += stall(3,1);
+            }
+        } else if (p[0].t == BRANCH) {
+            if ((p[1].dest != -1) and (p[1].dest == p[0].rs or p[1].dest == p[0].rt)) {
+                ciclos_branch += stall(0,4);
+            }
+            if ((p[2].dest != -1) and (p[2].dest == p[0].rs or p[2].dest == p[0].rt)) {
+                ciclos_branch += stall(1,3);
+            }
+            if ((p[3].dest != -1) and (p[3].dest == p[0].rs or p[3].dest == p[0].rt)) {
+                ciclos_branch += stall(2,2);
+            }
+            if ((p[4].dest != -1) and (p[4].dest == p[0].rs or p[4].dest == p[0].rt)) {
+                ciclos_branch += stall(3,1);
+            }
+        }
+
 #endif
 
 #endif
@@ -868,7 +954,7 @@ void ac_behavior(end) {
     cout << "L2 read miss/fetch: " << L2->miss[D4XREAD] << "/" << L2->fetch[D4XREAD] << endl;
     cout << "L2 write miss/fetch: " << L2->miss[D4XWRITE] << "/" << L2->fetch[D4XWRITE] << endl;
 
-    //cout << pip << endl;
+    cout << pip << endl;
 
     dbg_printf("@@@ end behavior @@@\n");
 }

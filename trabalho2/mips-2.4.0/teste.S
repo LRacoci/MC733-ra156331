@@ -1,11 +1,9 @@
-addi $t1, $t0, 0
-lw $t0, 0($t0)
-addi $t0, $t1, 0
-addi $t0, $t0, 0
+lw $t3, 36($t5)
 nop
-nop
-nop
+sll $t3, $t0, 24
+sra $t3, $t0, 24
 aqui:
-addi $t1, $t0, 0
+nop
+nop
 nop
 nop
