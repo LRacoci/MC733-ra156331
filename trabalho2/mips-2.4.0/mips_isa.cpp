@@ -956,12 +956,12 @@ ostream& operator<<(ostream& os, const Pipeline& p) {
 Pipeline pip;
 
 /* Parâmetros das Cache L1 e L2 */
-#define CACHE_L1_SIZE 12
-#define CACHE_L1_ASSOC 4
+#define CACHE_L1_SIZE 14
+#define CACHE_L1_ASSOC 2
 #define CACHE_L1_BLOCK_SIZE 4
 #define CACHE_L2_SIZE 18
-#define CACHE_L2_ASSOC 4
-#define CACHE_L2_BLOCK_SIZE 4
+#define CACHE_L2_ASSOC 2
+#define CACHE_L2_BLOCK_SIZE 5
 
 /* Stalls das caches */
 #define CACHE_L1_STALL 15
