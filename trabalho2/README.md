@@ -1,6 +1,6 @@
 # Roteiro Trabalho 2 MC733
 
-O relatório está após o roteiro.
+Este é o roteiro do projeto. O relatório está no outro arquivo markdown.
 
 ## Grupo:
 
