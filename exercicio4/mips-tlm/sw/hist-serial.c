@@ -8,7 +8,7 @@
 #define MAX_H 1024
 #define MAX_W 1024
 
-#define SATURATE(min, x, max) ( ((x) < (min)) ? (min): (((x) < (max)) ? (x):(max)) )
+#define SATURATE(min, x, max) ( ((x) < (min)) ? (min): (((x) > (max)) ? (max):(x)) )
 
 
 volatile int h, w, d;
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 		printf("w = %d > %d = MAX_W\n", w, MAX_W);
 		exit(0);
 	}
-	printf("[");
+	//printf("[");
 	for (i = 0; i < w; i++){
 		//printf("[");
 		for (j = 0; j < w; j++){ 

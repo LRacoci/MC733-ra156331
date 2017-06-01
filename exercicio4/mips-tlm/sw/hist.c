@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
 	ATOMIC( l1,
 		// Se identifica na região crítica
 		my_id = p;
-		// Copy this value
+		// Incrementa pra próxima thread.
 		p++;
 		if(my_id == 0){
 			scanf("%d %d\n%d", &w, &h, &d);

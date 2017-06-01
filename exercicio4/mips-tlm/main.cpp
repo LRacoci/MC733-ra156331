@@ -116,6 +116,7 @@ int sc_main(int ac, char *av[])
   mips_proc1.init(ac, av1);
   mips_proc1.set_prog_args();
   cerr << endl;
+  
   char** av2 = (char**) malloc(ac*sizeof(char**));
   memcpy (av2, av, ac*sizeof(char**));
 
@@ -149,8 +150,9 @@ int sc_main(int ac, char *av[])
   mips_proc3.PrintStat();
   cerr << endl;
   mips_proc4.PrintStat();
-
   cerr << endl;
+  /*
+  */
 
 #ifdef AC_STATS
   mips1_proc1.ac_sim_stats.time = sc_simulation_time();
@@ -161,6 +163,8 @@ int sc_main(int ac, char *av[])
   mips1_proc3.ac_sim_stats.print();
   mips1_proc4.ac_sim_stats.time = sc_simulation_time();
   mips1_proc4.ac_sim_stats.print();
+  /*
+  */
 #endif
 
 #ifdef AC_DEBUG

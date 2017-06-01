@@ -1,5 +1,12 @@
 # Exercício 4
 
+## Introdução
+
+### Objetivos
++ Integrar processador, memória, e periféricos através de um roteador.
++ Implementar um periférico simples.
++ Implementar e fazer uso de uma plataforma multicore.
+
 ## Procedimento
 ### Pré Atividade
 Foram seguidas as instruções do  [enunciado](https://gitlab.com/LRacoci/MC733-ra156331/tree/master/exercicio4 "Exercício 4"), seguindo os seguintes passos:
@@ -381,3 +388,135 @@ Para separar a execução de cada thread, foi usado o periférico de lock defini
 	ReleaseLock(lock)\
 }
 ```
+### Aplicação Implementada
+A aplicação implementada calcula o histograma de uma imagem.
+Para comparar o desempenho adequadamente, foram implementadas as versões [paralela](mips-tlm/sw/hist.c) e [serial](mips-tlm/sw/hist-serial.c). A diferença é que a versão serial faz tudo de uma vez sem necessidade de locks e barreiras. Já para a versão paralela foi necessário implementar algumas técnicas para lidar com a concorrência no compartilhamento de memória.
+
+#### Implementação Serial
+Esta é a versão trivial, que apenas inicializa um vetor com zeros até o número de bins necessários ao histograma e depois percorre cada pixel da imagem incrementando a posição dada pelo valor do pixel.
+
+Para garantir que os valores de pixels estarão no intervalo de indices do vetor, foi implementada a macro SATURATE mostrada a seguir:
+```c
+#define SATURATE(min, x, max) ( ((x) < (min)) ? (min): (((x) > (max)) ? (max):(x)) )
+```
+Esta macro garante seu retorno em [min, max]. Se x > max, retorna max, se x < min retorna min, ou seja, satura x entre min e max.
+
+Isso significa que se cada pixel da imagem era para ter valor máximo de 255, e algum pixel tiver um valor maior, este será contabilizado no histograma como no bin de 255. Simetricamente para valores negativos.
+
+#### Implementação Paralela
+Para implementar está aplicação em paralelo, percebeu-se que seria conveniente cada processador calcular primeiro um histograma parcial de parte da imagem e depois somar todos os parciais para obter o final.
+Assim, implementação desta aplicação foi dividida em quatro partes:
+
+1. Leitura da entrada e cálculo dos histogramas parciais
+2. Soma dos histogramas parciais
+3. Escrita do histograma final na saída padrão
+4. Termina a execução
+
+Entre cada uma dessas partes foi necessária uma barreira de sincronização pois, da forma como foram implementadas, uma parte não pode ser executada antes de a anterior ter terminado.
+
+Todas as barreiras foram implementadas da seguinte forma:
+```c
+// Declaração da barreira
+volatile int barreira = 0;
+int main(int argc, char *argv[]){
+    /*
+     * Execurta
+     * Codigo
+     * Antes
+     * da
+     * Barreira
+     */
+
+    SEQUENTIAL(
+		barreira++;
+	)
+	// Barreira para separar as duas partes
+	while (barreira < NUM_PROCS);
+
+    /*
+     * Execurta
+     * Codigo
+     * Depois
+     * da
+     * Barreira
+     */
+}
+```
+
+Isso garante que qualquer thread só passará do ```while``` quando a ultima thread incrementar a barreira dentro de ```SEQUENTIAL```.
+
+##### Parte 1: Leitura da Entrada e Histogramas Parciais
+Como as threads são identificadas pela ordem de chegada na primeira região crítica, podemos garantir que primeira thread lerá as primeiras linhas e as próximas que forem chegando lerão também na ordem de chegada e consequentemente na ordem de seus identificadores. Como a primeira thread que chega le as primeiras linhas, esta também ficará responsável por ler os 3 primeiros valores que representam o número de colunas, o número de linhas e o valor do maior pixel da imagem, que determina o número de bins no histograma.
+Para determinar quais linhas são responsabilidade de cada thread para ler e calcular o histograma parcial, uma variável local de cada thread recebe o índice da primeira linha que é de sua responsabilidade e da primeira que não é, chamadas no código de ```my_start``` e ```my_end``` como pode ser visto no trecho a seguir, que as define em função do id dado pela ordem de chegada, do número total de linhas lido pela primeira thread e do número total de processadores que é uma constante:
+```c
+    my_start = my_id*h/NUM_PROCS;
+	my_end = (1+my_id)*h/NUM_PROCS;
+```
+Quando ```h``` não é divisível pelo número de processadores, estas fórmulas garantem que a thread com ```my_id == 0``` receberá menos trabalho que alguma outra, porque ```my_start == 0``` e ```my_end == floor(h/NUM_PROC)```, então esta thread ficará responsável apenas por ```my_end - my_start == my_end == floor(h/NUM_PROC)``` linhas da matriz. Já a última tread será responsável por h/NUM_PROC + 1 linhas. Foi feito dessa forma para compensar o trabalho a mais que a primeira thread já teve para ler as primeiras linhas do cabeçalho da imagem para descobrir seus parâmetros principais.
+
+Para calcular os histogramas parciais, cada thread se responsabiliza pelo contabilização das linhas que leu da entrada, pois usam as variáveis locais ```my_start``` e ```my_end```.
+
+##### Parte 2: Soma dos Histogramas Parciais
+A soma dos histogramas parciais é realizada de forma alternada, a primeira thread soma o primeiro bin, a segunda o segundo e assim por diante, até acabarem as threads, quando recomeça pela primeira.
+
+Dessa forma o trabalho fica bem distribuído. O trecho do código relevante que faz isso pode ser visto a seguir:
+
+```c
+    for (i = my_id; i < d; i+=NUM_PROCS){
+		hist[NUM_PROCS][i] = 0;
+		for (j = 0; j < NUM_PROCS; j++){
+			hist[NUM_PROCS][i] += hist[j][i];
+		}
+	}
+```
+
+##### Parte 3: Imprimir a Resposta
+É feito apenas por uma thread. Não haveria nenhum ganho de desempenho se todas fizessem pois continua sendo necessário que apenas uma imprimisse por vez, para não intercalar as saídas, o que a tornaria ilegível.
+
+
+
+
+## Comparação de Desempenho
+Abaixo segue o final do que foi retornado nas execuções serial e paralela:
++ Execução Serial
+
+```
+Info: /OSCI/SystemC: Simulation stopped by user.
+ArchC: Simulation statistics
+    Times: 9.56 user, 0.19 system, 9.71 real
+    Number of instructions executed: 214090853
+    Simulation speed: 22394.44 K instr/s
+```
+
++ Execução Paralela
+
+```
+ArchC: Simulation statistics
+    Times: 45.21 user, 0.82 system, 46.00 real
+    Number of instructions executed: 263203255
+    Simulation speed: 5821.79 K instr/s
+```
+```
+ArchC: Simulation statistics
+    Times: 45.21 user, 0.82 system, 45.97 real
+    Number of instructions executed: 263264160
+    Simulation speed: 5823.14 K instr/s
+```
+```
+ArchC: Simulation statistics
+    Times: 45.21 user, 0.82 system, 45.94 real
+    Number of instructions executed: 262938661
+    Simulation speed: 5815.94 K instr/s
+```
+```
+ArchC: Simulation statistics
+    Times: 45.21 user, 0.82 system, 45.92 real
+    Number of instructions executed: 263088042
+    Simulation speed: 5819.24 K instr/s
+```
+O maior número de instruções é 263264160 do segundo processador.
+Ou seja, há 21% mais instruções na versão paralela.
+Isso provavelmente ocorreu, porque quando uma thread espera um lock, contiunua executando instruções (muitas instruções), e no caso desta aplicação estas esperas são necessárias para em dado instante de tempo, apenas uma thread esteja lendo a matriz da entrada padrão ou escrevendo a resposta obtida na saída padrão. O maior problema aqui é que o tempo gasto em processamento na resolução do problema é da mesma ordem de complexidade que a entrada, que deve ser lida serialmente. Isso faz com que a ordem de complexidade de leitura domine o tempo de processamento, tornando o paralelismo desvantajoso, neste caso.
+
+# Conclusões
+Nem sempre é possível melhorar o desempenho de aplicações paralelizando-as. Quando a complexidade de tempo domina assintóticamente o tempo de processamento paralelizável e não há um mecanismo que evite desperdício de instruções, pode ser o caso de a versão paralela ser até pior, como neste caso.
