@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 		printf("w = %d > %d = MAX_W\n", w, MAX_W);
 		exit(0);
 	}
-	//printf("[");
+	printf("[");
 	for (i = 0; i < w; i++){
 		//printf("[");
 		for (j = 0; j < w; j++){ 
