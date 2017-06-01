@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define ENDERECO_LOCK 536870912U //65
 
 #define NUM_PROCS 4
 
 #define MAX_BIN 256
-#define MAX_IMG 2048
+#define MAX_H 1024
+#define MAX_W 1024
 
 #define SATURATE(min, x, max) ( ((x) < (min)) ? (min): (((x) < (max)) ? (x):(max)) )
 
@@ -37,34 +39,36 @@
 
 volatile int p = 0, barreira[3] = {0, 0, 0};
 volatile int h, w, d;
-volatile int img[MAX_IMG][MAX_IMG];
+volatile int img[MAX_H][MAX_W];
 volatile int hist[NUM_PROCS+1][MAX_BIN];
 volatile int *lock = (int *) ENDERECO_LOCK;
 volatile int l1 = 0, l2 = 0, l3 = 0;
 
 int main(int argc, char *argv[]){
-	int i, j, my_id, my_start, my_end;
+	int i, j, my_id, my_start, my_end, magic_num;
+	char c;
+	char header[16];
 
 	ATOMIC( l1,
 		// Se identifica na região crítica
 		my_id = p;
-		//Copy this value
+		// Copy this value
 		p++;
 		if(my_id == 0){
-			//Le entrada
-			scanf("%d %d %d", &h, &w, &d);
+			scanf("%d %d\n%d", &w, &h, &d);
 			//printf("%d: img.shape = (%d, %d, %d)\n",my_id,h,w,d); // Debug 0
+			d++;
 			// Checa valores incorretos
-			if(d >= MAX_BIN){
-				printf("d = %d >= %d = MAX_BIN\n", d, MAX_BIN);
+			if(d > MAX_BIN){
+				printf("d = %d > %d = MAX_BIN\n", d, MAX_BIN);
 				exit(0);
 			}
-			if(w >= MAX_IMG){
-				printf("w = %d >= %d = MAX_IMG\n", w, MAX_IMG);
+			if(h > MAX_H){
+				printf("h = %d > %d = MAX_H\n", h, MAX_H);
 				exit(0);
 			}
-			if(h >= MAX_IMG){
-				printf("h = %d >= %d = MAX_IMG\n", h, MAX_IMG);
+			if(w > MAX_W){
+				printf("w = %d > %d = MAX_W\n", w, MAX_W);
 				exit(0);
 			}
 		}
@@ -73,17 +77,15 @@ int main(int argc, char *argv[]){
 		my_end = (1+my_id)*h/NUM_PROCS;
 
 
-		printf("%d: My vecs are:\n", my_id);
-		/*
-		*/
+		//printf("%d: My vecs are:\n", my_id);
 		for (i = my_start; i < my_end; i++){
 			for (j = 0; j < w; j++){ 
 				scanf ("%d", &img[i][j]);
-				printf(" %3d",  img[i][j]);
+				//printf(" %3d",  img[i][j]);
 			}
-			printf("\n");
+			//printf("\n");
 		}
-		printf("\n");
+		//printf("\n");
 	)
 
 
@@ -115,11 +117,11 @@ int main(int argc, char *argv[]){
 	ATOMIC( l2,
 		printf("%d: Partial hist: \n", my_id);
 
-		printf("%d: %3d[0]", my_id, hist[my_id][0]);
+		printf("%d: [%d", my_id, hist[my_id][0]);
 		for (j = 1; j < d; j++){ 
-			printf(" %3d[%d]", hist[my_id][j], j);
+			printf(", %d", hist[my_id][j], j);
 		}
-		printf("\n");
+		printf("]\n");
 	)
 
 	// Agora somaremos os histogramas parciais
@@ -144,11 +146,11 @@ int main(int argc, char *argv[]){
 	ATOMIC( l3,
 		if(my_id == 0){
 			printf("%d: Final hist: \n", my_id);
-			printf("%d: %3d[0]",my_id, hist[NUM_PROCS][0]);
+			printf("%d: [%d",my_id, hist[NUM_PROCS][0]);
 			for (j = 1; j < d; j++){
-				printf(" %3d[%d]", hist[NUM_PROCS][j], j);
+				printf(", %d", hist[NUM_PROCS][j], j);
 			}
-			printf("\n");
+			printf("]\n");
 		}
 		
 	)
