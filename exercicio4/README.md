@@ -296,34 +296,6 @@ Isso mostra que a implementação está fazendo exatamente o que pede a especifi
 
 
 Para instanciar 2 processadores no simulador, foi feito o seguinte [neste arquivo](mips-tlm/main.cpp):
-```cpp
-    mips mips_proc1("mips1");
-    mips mips_proc2("mips2");
-
-    mips_proc1.DM(bus.target_export);
-    mips_proc2.DM(bus.target_export);
-
-    ac_trace("mips1_proc1.trace");
-    ac_trace("mips1_proc2.trace");
-
-    bus.MEM_port(mem.target_export);
-    bus.PERIPHERAL_port(peripheral.target_export);
-
-    char** av1 = (char**) malloc(ac*sizeof(char**));
-    memcpy (av1, av, ac*sizeof(char**));
-
-    mips_proc1.init(ac, av1);
-    mips_proc1.set_prog_args();
-    cerr << endl;
-
-    char** av2 = (char**) malloc(ac*sizeof(char**));
-    memcpy (av2, av, ac*sizeof(char**));
-
-    mips_proc2.init(ac, av2);
-    mips_proc2.set_prog_args();
-    cerr << endl;
-```
-
 ```c
 int sc_main(int ac, char *av[])
 {
@@ -380,5 +352,32 @@ int sc_main(int ac, char *av[])
     #endif
 
       return mips_proc1.ac_exit_status;
+}
+```
+
+Como pode ser visto no método ```void mips_syscall::set_prog_args(int argc, char **argv)``` [deste arquivo](mips-tlm/mips/mips_syscall.cpp), é criada uma pilha separada para cada thread, caso contrário o comportamento de do programa em execução seria incoerente. Porém a região de dados, onde as variáveis globais são declaradas, continua compartilhada, portanto todas as variáveis globais serão declaradas como globais.
+
+Para separar a execução de cada thread, foi usado o periférico de lock definido e implementado na etapa anterior e foram definidas as seguintes macros:
+
+```c
+// Implementa MACROS para locks globais
+#define AcquireGlobalLock() {while (*lock);}
+#define ReleaseGlobalLock() {*lock = 0;}
+
+#define SEQUENTIAL(code) {\
+	AcquireGlobalLock() \
+	{code} \
+	ReleaseGlobalLock()\
+}
+
+// Implementa MACROS para lcoks locais
+#define AcquireLock(lock) {SEQUENTIAL(while(lock); lock = 1;)}
+
+#define ReleaseLock(lock) {lock = 0;}
+
+#define ATOMIC(lock, code) {\
+	AcquireLock(lock) \
+	{code} \
+	ReleaseLock(lock)\
 }
 ```

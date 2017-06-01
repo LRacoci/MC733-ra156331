@@ -14,7 +14,7 @@
 #define CEIL_DIV(a, b) ((a)/(b) + ((a%b != 0)?1:0))
 
 
-
+// Implementa MACROS para locks globais
 #define AcquireGlobalLock() {while (*lock);}
 #define ReleaseGlobalLock() {*lock = 0;}
 
@@ -24,20 +24,28 @@
 	ReleaseGlobalLock()\
 }
 
+// Implementa MACROS para lcoks locais
 #define AcquireLock(lock) {SEQUENTIAL(while(lock); lock = 1;)} 
 
 #define ReleaseLock(lock) {lock = 0;}
 
-volatile int *lock = (int *) ENDERECO_LOCK;
+#define ATOMIC(lock, code) {\
+	AcquireLock(lock) \
+	{code} \
+	ReleaseLock(lock)\
+}
+
 volatile int p = 0, barreira[3] = {0, 0, 0};
 volatile int h, w, d;
 volatile int img[MAX_IMG][MAX_IMG];
 volatile int hist[NUM_PROCS+1][MAX_BIN];
+volatile int *lock = (int *) ENDERECO_LOCK;
+volatile int l1 = 0, l2 = 0, l3 = 0;
 
 int main(int argc, char *argv[]){
 	int i, j, my_id, my_start, my_end;
 
-	SEQUENTIAL(
+	ATOMIC( l1,
 		// Se identifica na região crítica
 		my_id = p;
 		//Copy this value
@@ -104,7 +112,7 @@ int main(int argc, char *argv[]){
 
 
 	// Imprime os histogramas paciais obtidos até agora
-	SEQUENTIAL(
+	ATOMIC( l2,
 		printf("%d: Partial hist: \n", my_id);
 
 		printf("%d: %3d[0]", my_id, hist[my_id][0]);
@@ -133,7 +141,7 @@ int main(int argc, char *argv[]){
 	// Agora só falta imprimir a resposta final
 
 
-	SEQUENTIAL(
+	ATOMIC( l3,
 		if(my_id == 0){
 			printf("%d: Final hist: \n", my_id);
 			printf("%d: %3d[0]",my_id, hist[NUM_PROCS][0]);
