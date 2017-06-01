@@ -49,8 +49,8 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
   MEM_port("MEM_port", MEMSIZE), // This is the memory port, assigned for 5MB
   PERIPHERAL_port("PERIPHERAL_port", 4U) // This is the peripheral port
 {
-    /// Binds target_export to the memory
-    target_export(*this);
+	/// Binds target_export to the memory
+	target_export(*this);
 
 }
 
@@ -64,16 +64,16 @@ ac_tlm_bus::~ac_tlm_bus()
 /// statement inside this method. Notice that ac_tlm_req has an address field.
 ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request)
 {
-    ac_tlm_rsp response;
+	ac_tlm_rsp response;
 
-    if(request.addr < MEMSIZE) {
+	if(request.addr < MEMSIZE) {
 
-      response = MEM_port->transport(request);
+	  response = MEM_port->transport(request);
 
-    } else {
+	} else {
 
-      response = PERIPHERAL_port->transport(request);
+	  response = PERIPHERAL_port->transport(request);
 
-    }
-    return response;
+	}
+	return response;
 }

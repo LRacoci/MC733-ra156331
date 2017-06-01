@@ -59,7 +59,7 @@ class ac_tlm_peripheral :
 {
 public:
   /// Variavel Criada
-  int ultimo_valor_escrito;
+  uint32_t ultimo_valor_escrito;
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
   /// Internal write

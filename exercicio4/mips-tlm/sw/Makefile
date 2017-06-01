@@ -7,11 +7,8 @@ CC = mips-newlib-elf-gcc
 CFLAGS = -msoft-float -specs=archc
 LDFLAGS = -lm
 
-TARGET = hello_world.mips
+TARGET = hello_world.mips hist.mips
 INC_DIR := -I.
-
-SRCS := hello_world.c
-OBJS := $(SRCS:.c=.o)
 
 #------------------------------------------------------
 .SILENT:
@@ -20,8 +17,14 @@ OBJS := $(SRCS:.c=.o)
 .SUFFIXES: .o .c .h
 
 #------------------------------------------------------
-all: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) -o $(TARGET) $(LDFLAGS)
+all: $(TARGET)
+# Regras Genéricas
+%.mips: %.o
+	$(CC) $< $(CFLAGS) $(LDFLAGS) -o $@
+
+%.o: %.c
+	$(CC) -c $(CFLAGS) $(INC_DIR) -c $< -o $@
+#------------------------------------------------------
 #------------------------------------------------------
 clean:
 	rm -f *.o *~ $(TARGET)
@@ -30,7 +33,5 @@ distclean: clean
 #------------------------------------------------------
 .c.o:
 	$(CC) -c $(CFLAGS) $(INC_DIR) -c $<
-	
-
 
 
