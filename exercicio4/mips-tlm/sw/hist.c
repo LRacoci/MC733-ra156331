@@ -113,17 +113,6 @@ int main(int argc, char *argv[]){
 	/////////////////////////////////////////////////////////////////////////////
 
 
-	// Imprime os histogramas paciais obtidos até agora
-	ATOMIC( l2,
-		printf("%d: Partial hist: \n", my_id);
-
-		printf("%d: [%d", my_id, hist[my_id][0]);
-		for (j = 1; j < d; j++){ 
-			printf(", %d", hist[my_id][j], j);
-		}
-		printf("]\n");
-	)
-
 	// Agora somaremos os histogramas parciais
 
 	for (i = my_id; i < d; i+=NUM_PROCS){
