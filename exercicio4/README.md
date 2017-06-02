@@ -296,7 +296,7 @@ ArchC: Simulation statistics
 
 
 ```
-Isso mostra que a implementação está fazendo exatamente o que pede a especificação, com excessão do novo valor que não é 1 como desejado, mas 0x01000000
+Isso mostra que a implementação está fazendo exatamente o que foi especificado, isto é, lendo e transformando o valor naquela posição, com excessão do novo valor que não ser 1, mas 0x01000000, isso, no entanto não será um problema pois este valor só será comparado com 0, então qualquer valor diferente de 0 serve.
 
 ### Plataforma Multicore
 
@@ -361,7 +361,7 @@ int sc_main(int ac, char *av[])
 }
 ```
 
-Como pode ser visto no método ```void mips_syscall::set_prog_args(int argc, char **argv)``` [deste arquivo](mips-tlm/mips/mips_syscall.cpp), é criada uma pilha separada para cada thread, caso contrário o comportamento de do programa em execução seria incoerente. Porém a região de dados, onde as variáveis globais são declaradas, continua compartilhada, portanto todas as variáveis globais serão declaradas como globais.
+Como pode ser visto no método ```void mips_syscall::set_prog_args(int argc, char **argv)``` [deste arquivo](mips-tlm/mips/mips_syscall.cpp), é criada uma pilha separada para cada thread, caso contrário o comportamento de do programa em execução seria incoerente. Porém a região de dados, onde as variáveis globais são declaradas, continua compartilhada, portanto todas as variáveis que precisarem ser compartilhadas entre as threads serão declaradas como globais.
 
 Para separar a execução de cada thread, foi usado o periférico de lock definido e implementado na etapa anterior e foram definidas as seguintes macros:
 
@@ -389,10 +389,10 @@ Para separar a execução de cada thread, foi usado o periférico de lock defini
 ```
 ### Aplicação Implementada
 A aplicação implementada calcula o histograma de uma imagem.
-Para comparar o desempenho adequadamente, foram implementadas as versões [paralela](mips-tlm/sw/hist.c) e [serial](mips-tlm/sw/hist-serial.c). A diferença é que a versão serial faz tudo de uma vez sem necessidade de locks e barreiras. Já para a versão paralela foi necessário implementar algumas técnicas para lidar com a concorrência no compartilhamento de memória.
+Para comparar o desempenho adequadamente, foram implementadas as versões [paralela](mips-tlm/sw/hist.c) e [serial](mips-tlm/sw/hist-serial.c). A diferença é que a versão serial faz tudo sem necessidade de locks e barreiras. Já para a versão paralela foi necessário implementar algumas técnicas para lidar com a concorrência no compartilhamento de memória.
 
 #### Implementação Serial
-Esta é a versão trivial, que apenas inicializa um vetor com zeros até o número de bins necessários ao histograma e depois percorre cada pixel da imagem incrementando a posição dada pelo valor do pixel.
+Esta é a versão trivial, que apenas inicializa um vetor com zeros até o número de bins necessário ao histograma e depois percorre cada pixel da imagem incrementando a posição dada pelo valor do pixel.
 
 Para garantir que os valores de pixels estarão no intervalo de indices do vetor, foi implementada a macro SATURATE mostrada a seguir:
 ```c
@@ -400,11 +400,11 @@ Para garantir que os valores de pixels estarão no intervalo de indices do vetor
 ```
 Esta macro garante seu retorno em [min, max]. Se x > max, retorna max, se x < min retorna min, ou seja, satura x entre min e max.
 
-Isso significa que se cada pixel da imagem era para ter valor máximo de 255, e algum pixel tiver um valor maior, este será contabilizado no histograma como no bin de 255. Simetricamente para valores negativos.
+Isso significa que se cada pixel da imagem era para ter valor máximo de 255, e algum pixel tiver um valor maior, este será contabilizado no histograma como no bin de 255. Simetricamente valores negativos serão contados no bin 0.
 
 #### Implementação Paralela
 Para implementar está aplicação em paralelo, percebeu-se que seria conveniente cada processador calcular primeiro um histograma parcial de parte da imagem e depois somar todos os parciais para obter o final.
-Assim, implementação desta aplicação foi dividida em quatro partes:
+Assim, a implementação desta aplicação foi dividida em quatro partes:
 
 1. Leitura da entrada e cálculo dos histogramas parciais
 2. Soma dos histogramas parciais
@@ -458,7 +458,7 @@ Para determinar quais linhas são responsabilidade de cada thread para ler e cal
 ```
 Quando ```h``` não é divisível pelo número de processadores, estas fórmulas garantem que a thread com ```my_id == 0``` receberá menos trabalho que alguma outra, porque ```my_start == 0``` e ```my_end == floor(h/NUM_PROC)```, então esta thread ficará responsável apenas por ```my_end - my_start == my_end == floor(h/NUM_PROC)``` linhas da matriz. Já a última tread será responsável por h/NUM_PROC + 1 linhas. Foi feito dessa forma para compensar o trabalho a mais que a primeira thread já teve para ler as primeiras linhas do cabeçalho da imagem para descobrir seus parâmetros principais.
 
-Para calcular os histogramas parciais, cada thread se responsabiliza pelo contabilização das linhas que leu da entrada, pois usam as variáveis locais ```my_start``` e ```my_end```.
+Para calcular os histogramas parciais, cada thread se responsabiliza pelo contabilização das linhas que leu da entrada, pois usam as variáveis locais ```my_start``` e ```my_end``` para percorrer as linhas da matriz.
 
 ##### Parte 2: Soma dos Histogramas Parciais
 A soma dos histogramas parciais é realizada de forma alternada, a primeira thread soma o primeiro bin, a segunda o segundo e assim por diante, até acabarem as threads, quando recomeça pela primeira.
