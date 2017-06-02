@@ -471,12 +471,13 @@ Dessa forma o trabalho fica bem distribuído. O trecho do código relevante que 
 ```
 
 ##### Parte 3: Imprimir a Resposta
-É feito apenas por uma thread. Não haveria nenhum ganho de desempenho se todas fizessem pois continua sendo necessário que apenas uma imprimisse por vez, para não intercalar as saídas, o que a tornaria ilegível.
+É feito apenas por uma thread. Não haveria nenhum ganho de desempenho se todas fizessem pois continuaria sendo necessário que apenas uma imprimisse por vez, para não intercalar as saídas.
 
 
 
 
 ## Comparação de Desempenho
+Decidiu-se por instanciar 4 processadores ao invés de só 2, para que qualquer diferença entre a execução serial e a paralela ficasse mais evidente
 Abaixo segue o final do que foi retornado nas execuções serial e paralela:
 + Execução Serial
 
@@ -518,5 +519,49 @@ O maior número de instruções é 263264160 do segundo processador.
 Ou seja, há 21% mais instruções na versão paralela.
 Isso provavelmente ocorreu, porque quando uma thread espera um lock, contiunua executando instruções (muitas instruções), e no caso desta aplicação estas esperas são necessárias para em dado instante de tempo, apenas uma thread esteja lendo a matriz da entrada padrão ou escrevendo a resposta obtida na saída padrão. O maior problema aqui é que o tempo gasto em processamento na resolução do problema é da mesma ordem de complexidade que a entrada, que deve ser lida serialmente. Isso faz com que a ordem de complexidade de leitura domine o tempo de processamento, tornando o paralelismo desvantajoso, neste caso.
 
-# Conclusões
-Nem sempre é possível melhorar o desempenho de aplicações paralelizando-as. Quando a complexidade de tempo domina assintóticamente o tempo de processamento paralelizável e não há um mecanismo que evite desperdício de instruções, pode ser o caso de a versão paralela ser até pior, como neste caso.
+Para testar esta última conjectura, implementou-se uma aplicação de quadrar uma matriz n por n em complexidade O(n^3) serial, mas com entrada O(n^2) e observou-se que para uma entrada de n = 100, obtiveram-se as seguintes saídas:
+
++ **Serial**
+```
+ArchC: Simulation statistics
+    Times: 4.04 user, 0.18 system, 3.95 real
+    Number of instructions executed: 86731814
+    Simulation speed: 21468.27 K instr/s
+
+```
+
++ **Paralelo**
+
+```
+ArchC: Simulation statistics
+    Times: 12.34 user, 1.01 system, 13.11 real
+    Number of instructions executed: 72617243
+    Simulation speed: 5884.70 K instr/s
+
+```
+```
+ArchC: Simulation statistics
+    Times: 12.34 user, 1.01 system, 13.05 real
+    Number of instructions executed: 72617202
+    Simulation speed: 5884.70 K instr/s
+
+```
+```
+ArchC: Simulation statistics
+    Times: 12.34 user, 1.01 system, 12.98 real
+    Number of instructions executed: 72617884
+    Simulation speed: 5884.76 K instr/s
+
+```
+```
+ArchC: Simulation statistics
+    Times: 12.34 user, 1.01 system, 12.91 real
+    Number of instructions executed: 48794275
+    Simulation speed: 3954.16 K instr/s
+
+```
+O maior número de instruções é 72617884, do terceiro processador, que é 83,7% do número de instruções da execução serial. O que mostra que a relação assintótica entre o tempo gasto com processamento e com entrada/saída é bem importante nesse caso.
+
+
+# Conclusão
+Nem sempre é possível melhorar o desempenho de aplicações paralelizando-as. Quando a complexidade de tempo gasto com operações seriais domina assintóticamente o tempo de processamento paralelizável e não há um mecanismo que evite desperdício de instruções como interrupções por hardware, pode ser o caso de a versão paralela ser até pior, que foi o que aconteceu com a primeira aplicação de histograma.
