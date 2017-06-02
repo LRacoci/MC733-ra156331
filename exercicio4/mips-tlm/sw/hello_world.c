@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 #define ENDERECO_LOCK 536870912U //65
 
 #define NUM_PROCS 4
 
 #define MAX_BIN 256
-#define MAX_IMG 2048
+#define MAX_H 1024
+#define MAX_W 1024
 
 #define SATURATE(min, x, max) ( ((x) < (min)) ? (min): (((x) < (max)) ? (x):(max)) )
 
@@ -35,99 +37,51 @@
 	ReleaseLock(lock)\
 }
 
-volatile int p = 0, barreira[3] = {0, 0, 0};
-volatile int h, w, d;
-volatile int img[MAX_IMG][MAX_IMG];
-volatile int hist[NUM_PROCS+1][MAX_BIN];
+volatile int p = 0, barreira[] = {0, 0, 0};
+volatile int n;
+volatile int inp[MAX_H][MAX_W] = {0};
+volatile int out[MAX_H][MAX_W] = {0};
 volatile int *lock = (int *) ENDERECO_LOCK;
-volatile int l1 = 0, l2 = 0, l3 = 0;
+volatile int l1 = 0, l2 = 0;
 
 int main(int argc, char *argv[]){
-	int i, j, my_id, my_start, my_end;
+	int i, j, k, my_id, my_start, my_end;
 
+	//SEQUENTIAL(
 	ATOMIC( l1,
 		// Se identifica na região crítica
 		my_id = p;
-		//Copy this value
+		// Incrementa pra próxima thread.
 		p++;
 		if(my_id == 0){
-			//Le entrada
-			scanf("%d %d %d", &h, &w, &d);
-			//printf("%d: img.shape = (%d, %d, %d)\n",my_id,h,w,d); // Debug 0
-			// Checa valores incorretos
-			if(d >= MAX_BIN){
-				printf("d = %d >= %d = MAX_BIN\n", d, MAX_BIN);
-				exit(0);
-			}
-			if(w >= MAX_IMG){
-				printf("w = %d >= %d = MAX_IMG\n", w, MAX_IMG);
-				exit(0);
-			}
-			if(h >= MAX_IMG){
-				printf("h = %d >= %d = MAX_IMG\n", h, MAX_IMG);
-				exit(0);
-			}
+			scanf("%d \n", &n);
 		}
 		
-		my_start = my_id*h/NUM_PROCS;
-		my_end = (1+my_id)*h/NUM_PROCS;
+		my_start = my_id*n/NUM_PROCS;
+		my_end = (1+my_id)*n/NUM_PROCS;
 
-
-		printf("%d: My vecs are:\n", my_id);
-		/*
-		*/
+		//printf("%d: My lines:\n", my_id);
 		for (i = my_start; i < my_end; i++){
-			for (j = 0; j < w; j++){ 
-				scanf ("%d", &img[i][j]);
-				printf(" %3d",  img[i][j]);
+			for (j = 0; j < n; j++){ 
+				scanf ("%d", &inp[i][j]);
+				//printf(" %3d", inp[i][j]);
 			}
-			printf("\n");
+			//printf("\n");	
 		}
-		printf("\n");
 	)
 
-
-
-	// Calcula os histogramas parciais
-
-	for (j = 0; j < d; j++){
-		hist[my_id][j] = 0;
-	}
-
-	for (i = my_start; i < my_end; i++){
-		for (j = 0; j < w; j++){ 
-			hist[my_id][SATURATE(0,img[i][j], d-1)]++;
-		}
-	}
-	
-
-	
 	SEQUENTIAL(
 		barreira[0]++;
 	)
 
-	// Barreira para separar as duas partes
+	// Barreira para esperar printar
 	while (barreira[0] < NUM_PROCS);
-	/////////////////////////////////////////////////////////////////////////////
 
-
-	// Imprime os histogramas paciais obtidos até agora
-	ATOMIC( l2,
-		printf("%d: Partial hist: \n", my_id);
-
-		printf("%d: %3d[0]", my_id, hist[my_id][0]);
-		for (j = 1; j < d; j++){ 
-			printf(" %3d[%d]", hist[my_id][j], j);
-		}
-		printf("\n");
-	)
-
-	// Agora somaremos os histogramas parciais
-
-	for (i = my_id; i < d; i+=NUM_PROCS){
-		hist[NUM_PROCS][i] = 0;
-		for (j = 0; j < NUM_PROCS; j++){
-			hist[NUM_PROCS][i] += hist[j][i];
+	for (i = my_start; i < my_end; i++){
+		for (j = 0; j < n; j++){ 
+			for (k = 0; k < n; k++)	{
+				out[i][j] += inp[i][k] * inp[k][j];
+			}
 		}
 	}
 
@@ -135,22 +89,19 @@ int main(int argc, char *argv[]){
 		barreira[1]++;
 	)
 
-	// Barreira para esperar todo mundo acabar de somar
+	// Barreira para esperar printar
 	while (barreira[1] < NUM_PROCS);
-	/////////////////////////////////////////////////////////////////////////////
-	// Agora só falta imprimir a resposta final
-
-
-	ATOMIC( l3,
-		if(my_id == 0){
-			printf("%d: Final hist: \n", my_id);
-			printf("%d: %3d[0]",my_id, hist[NUM_PROCS][0]);
-			for (j = 1; j < d; j++){
-				printf(" %3d[%d]", hist[NUM_PROCS][j], j);
+	
+	//SEQUENTIAL(
+	ATOMIC( l2,
+		// Para não sobrecarregar o 0
+		if (my_id == 1)
+		for (i = 0; i < n; i++){
+			for (j = 0; j < n; j++){ 
+				printf(" %3d", out[i][j]);
 			}
 			printf("\n");
 		}
-		
 	)
 
 	SEQUENTIAL(

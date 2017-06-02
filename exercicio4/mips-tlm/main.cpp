@@ -30,15 +30,6 @@ const char *archc_options="-abi -dy ";
 
 int sc_main(int ac, char *av[])
 {
-  /*
-  int i;
-  mips mips_proc[NUM_PROCS];
-  for(i = 0; i < NUM_PROCS; i++){
-    char name[] = "mips256";
-    sprintf(name, "mips%d", i+1);
-    mips_proc[i] (name);
-  }
-  */
 
   //!  ISA simulator
   mips mips_proc1("mips1");
@@ -56,13 +47,6 @@ int sc_main(int ac, char *av[])
   ac_tlm_peripheral peripheral("peripheral");
 
 #ifdef AC_DEBUG
-  /*
-  for(i = 0; i < NUM_PROCS; i++){
-    char name[] = "mips1_proc256.trace";
-    sprintf(name, "mips1_proc%d.trace", i+1);
-    ac_trace(name);
-  }
-  */
 
   ac_trace("mips1_proc1.trace");
   ac_trace("mips1_proc2.trace");
@@ -72,14 +56,6 @@ int sc_main(int ac, char *av[])
   */
   
 #endif
-  /*
-
-  for(i = 0; i < NUM_PROCS; i++){
-    mips_proc[i].DM(bus.target_export);
-  }
-
-
-  */
   
   mips_proc1.DM(bus.target_export);
   mips_proc2.DM(bus.target_export);
@@ -91,24 +67,6 @@ int sc_main(int ac, char *av[])
 
   bus.MEM_port(mem.target_export);
   bus.PERIPHERAL_port(peripheral.target_export);
-
-  /*
-  
-
-
-  for(i = 0; i < NUM_PROCS; i++){
-
-    char** av_i = (char**) malloc(ac*sizeof(char**));
-    memcpy (av_i, av, ac*sizeof(char**));
-
-    mips_proc[i].init(ac, av_i);
-    mips_proc[i].set_prog_args();
-    cerr << endl;
-  }
-
-
-
-  */
 
   char** av1 = (char**) malloc(ac*sizeof(char**));
   memcpy (av1, av, ac*sizeof(char**));

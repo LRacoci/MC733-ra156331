@@ -418,6 +418,11 @@ Todas as barreiras foram implementadas da seguinte forma:
 ```c
 // Declaração da barreira
 volatile int barreira = 0;
+/* Declara
+ * as
+ * outras
+ * variáveis
+ */
 int main(int argc, char *argv[]){
     /*
      * Execurta
@@ -471,9 +476,7 @@ Dessa forma o trabalho fica bem distribuído. O trecho do código relevante que 
 ```
 
 ##### Parte 3: Imprimir a Resposta
-É feito apenas por uma thread. Não haveria nenhum ganho de desempenho se todas fizessem pois continuaria sendo necessário que apenas uma imprimisse por vez, para não intercalar as saídas.
-
-
+É feito apenas por uma thread. Não haveria nenhum ganho de desempenho se todas fizessem pois continuaria sendo necessário que apenas uma imprimisse por vez. Além disso, se todas fizessem, haveria risco de intercalar as saídas tornando-a ilegível.
 
 
 ## Comparação de Desempenho
@@ -560,7 +563,7 @@ ArchC: Simulation statistics
     Simulation speed: 3954.16 K instr/s
 
 ```
-O maior número de instruções é 72617884, do terceiro processador, que é 83,7% do número de instruções da execução serial. O que mostra que a relação assintótica entre o tempo gasto com processamento e com entrada/saída é bem importante nesse caso.
+O maior número de instruções é 72617884, do terceiro processador, que é 83,7% do número de instruções da execução serial. O que mostra que a relação assintótica entre o tempo gasto com processamento e com entrada/saída é importante.
 
 
 # Conclusão
