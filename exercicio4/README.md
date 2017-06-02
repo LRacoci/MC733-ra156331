@@ -525,6 +525,7 @@ Isso provavelmente ocorreu, porque quando uma thread espera um lock, contiunua e
 Para testar esta última conjectura, implementou-se uma aplicação de quadrar uma matriz n por n em complexidade O(n^3) serial, mas com entrada O(n^2) e observou-se que para uma entrada de n = 100, obtiveram-se as seguintes saídas:
 
 + **Serial**
+
 ```
 ArchC: Simulation statistics
     Times: 4.04 user, 0.18 system, 3.95 real
