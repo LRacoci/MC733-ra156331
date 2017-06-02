@@ -8,9 +8,8 @@
 + Implementar e fazer uso de uma plataforma multicore.
 
 ## Procedimento
+Foram seguidas as instruções do  [enunciado](https://gitlab.com/LRacoci/MC733-ra156331/tree/master/exercicio4 "Exercício 4") como detalhado a seguir:
 ### Pré Atividade
-Foram seguidas as instruções do  [enunciado](https://gitlab.com/LRacoci/MC733-ra156331/tree/master/exercicio4 "Exercício 4"), seguindo os seguintes passos:
-
 Obteve-se a [plataforma MIPS atualizada](http://www.ic.unicamp.br/~lucas/teaching/mc723/2017-1/mips-tlm-per.tar.gz).
 Depois executou-se os seguintes comandos mostrados no enunciado:
 ```
