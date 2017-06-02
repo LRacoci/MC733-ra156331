@@ -133,7 +133,8 @@ int main(int argc, char *argv[]){
 
 
 	ATOMIC( l3,
-		if(my_id == 0){
+		// Para não sobrecarregar a 0
+		if(my_id == 1){
 			printf("%d: Final hist: \n", my_id);
 			printf("%d: [%d",my_id, hist[NUM_PROCS][0]);
 			for (j = 1; j < d; j++){
