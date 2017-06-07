@@ -33,11 +33,6 @@ int sc_main(int ac, char *av[])
 
   //!  ISA simulator
   mips mips_proc1("mips1");
-  mips mips_proc2("mips2");
-  mips mips_proc3("mips3");
-  mips mips_proc4("mips4");
-  /*
-  */
 
   //! Bus
   ac_tlm_bus bus("bus");
@@ -49,80 +44,25 @@ int sc_main(int ac, char *av[])
 #ifdef AC_DEBUG
 
   ac_trace("mips1_proc1.trace");
-  ac_trace("mips1_proc2.trace");
-  ac_trace("mips1_proc3.trace");
-  ac_trace("mips1_proc4.trace");
-  /*
-  */
   
 #endif
   
   mips_proc1.DM(bus.target_export);
-  mips_proc2.DM(bus.target_export);
-  mips_proc3.DM(bus.target_export);
-  mips_proc4.DM(bus.target_export);
-  /*
-  */
-  
-
   bus.MEM_port(mem.target_export);
   bus.PERIPHERAL_port(peripheral.target_export);
 
-  char** av1 = (char**) malloc(ac*sizeof(char**));
-  memcpy (av1, av, ac*sizeof(char**));
-
-  mips_proc1.init(ac, av1);
+  mips_proc1.init(ac, av);
   mips_proc1.set_prog_args();
   cerr << endl;
-  
-  char** av2 = (char**) malloc(ac*sizeof(char**));
-  memcpy (av2, av, ac*sizeof(char**));
-
-  mips_proc2.init(ac, av2);
-  mips_proc2.set_prog_args();
-  cerr << endl;
-
-  char** av3 = (char**) malloc(ac*sizeof(char**));
-  memcpy (av3, av, ac*sizeof(char**));
-
-  mips_proc3.init(ac, av3);
-  mips_proc3.set_prog_args();
-  cerr << endl;
-
-  char** av4 = (char**) malloc(ac*sizeof(char**));
-  memcpy (av4, av, ac*sizeof(char**));
-
-  mips_proc4.init(ac, av4);
-  mips_proc4.set_prog_args();
-  cerr << endl;
-  /*
-  */
-  
   
   sc_start();
 
   mips_proc1.PrintStat();
   cerr << endl;
-  mips_proc2.PrintStat();
-  cerr << endl;
-  mips_proc3.PrintStat();
-  cerr << endl;
-  mips_proc4.PrintStat();
-  cerr << endl;
-  /*
-  */
 
 #ifdef AC_STATS
   mips1_proc1.ac_sim_stats.time = sc_simulation_time();
   mips1_proc1.ac_sim_stats.print();
-  mips1_proc2.ac_sim_stats.time = sc_simulation_time();
-  mips1_proc2.ac_sim_stats.print();
-  mips1_proc3.ac_sim_stats.time = sc_simulation_time();
-  mips1_proc3.ac_sim_stats.print();
-  mips1_proc4.ac_sim_stats.time = sc_simulation_time();
-  mips1_proc4.ac_sim_stats.print();
-  /*
-  */
 #endif
 
 #ifdef AC_DEBUG

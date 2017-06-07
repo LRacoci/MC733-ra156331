@@ -32,7 +32,7 @@ ac_tlm_peripheral::~ac_tlm_peripheral() {
 */
 ac_tlm_rsp_status ac_tlm_peripheral::writem( const uint32_t &a , const uint32_t &d )
 {
-  cout << d << '@' << std::hex << a << endl;
+  //cout << d << '@' << std::hex << a << endl;
   ultimo_valor_escrito = d;
   return SUCCESS;
 }

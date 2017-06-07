@@ -1,6 +1,9 @@
 TARGET=platform
 EXE = $(TARGET).x
-SW = sw/hello_world.mips
+SW = sw/aplicacao.mips
+
+ENTRADA = sw/noise_blur_00.pgm
+SAIDA = sw/saida.pgm
 
 SRCS := main.cpp
 OBJS := $(SRCS:.cpp=.o)
@@ -64,7 +67,7 @@ main.o:
 #all: $(EXE)
 #------------------------------------------------------
 run: $(EXE)
-	./$(EXE) -- ${SW} < sw/arq.in
+	./$(EXE) -- ${SW} ${ENTRADA} ${SAIDA}
 #------------------------------------------------------
 .cpp.o:
 	$(CC) $(CFLAGS) $(INC_DIR) -c $<
