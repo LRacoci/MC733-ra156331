@@ -7,7 +7,7 @@ CC = mips-newlib-elf-gcc
 CFLAGS = -msoft-float -specs=archc
 LDFLAGS = -lm
 
-TARGET = hello_world.mips hist.mips
+TARGET = aplicacao.mips
 INC_DIR := -I.
 
 #------------------------------------------------------
