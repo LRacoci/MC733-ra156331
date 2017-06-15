@@ -34,10 +34,10 @@ using namespace std;
 int sc_main(int ac, char *av[])
 {
 #ifdef NUM_PROCS
-	vector< *mips > procs(NUM_PROCS)
+	vector< mips* > procs(NUM_PROCS);
 	for(int i = 0; i < NUM_PROCS; i++){
-		char name[] = "mips_______"
-		sprintf(name, "mips%d" i+1);
+		char name[] = "mips________";
+		sprintf(name, "mips%d", i+1);
 		procs[i] = new mips(name);
 	}
 #else
@@ -110,7 +110,7 @@ int sc_main(int ac, char *av[])
 	ac_close_trace();
 #endif
 #ifdef NUM_PROCS
-	return proc[0]->.ac_exit_status;
+	return procs[0]->ac_exit_status;
 #else
 	return mips_proc1.ac_exit_status;
 #endif
