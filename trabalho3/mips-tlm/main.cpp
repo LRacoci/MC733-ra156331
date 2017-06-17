@@ -46,7 +46,7 @@ int sc_main(int ac, char *av[])
 #endif
 
 	//! Bus
-	ac_tlm_bus bus("bus");
+	ac_tlm_bus bus("bus"); //, NUM_PROCS);
 	// Memory
 	ac_tlm_mem mem("mem");
 	// Peripheral
@@ -66,8 +66,11 @@ int sc_main(int ac, char *av[])
 	mips_proc1.DM(bus.target_export);
 #endif
 	bus.MEM_port(mem.target_export);
-	bus.PERIPHERAL_port(peripheral.target_export);
+#ifdef NUM_PROCS
+	//bus.
+#endif
 
+	bus.PERIPHERAL_port(peripheral.target_export);
 #ifdef NUM_PROCS
 	for(int i = 0; i < NUM_PROCS; i++){
 		char** avi = (char**) malloc(ac*sizeof(char**));

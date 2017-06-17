@@ -43,6 +43,14 @@
 #include "ac_tlm_protocol.H"
 #include  "ac_tlm_port.H"
 
+
+#define MEMBASE 0
+#define MEMSIZE 67108864U //536870912U
+#define LOCK_BASE MEMSIZE
+#define LOCK_SIZE 4U
+#define COMPLEX_BASE LOCK_BASE + LOCK_SIZE
+#define COMPLEX_SIZE (2*2+3*2)*4U
+
 //////////////////////////////////////////////////////////////////////////////
 
 // using statements
@@ -63,6 +71,7 @@ public:
   sc_export<ac_tlm_transport_if> target_export;
   ac_tlm_port MEM_port;
   ac_tlm_port PERIPHERAL_port;
+  ac_tlm_port COMPLEX_port;
 
 
   /**

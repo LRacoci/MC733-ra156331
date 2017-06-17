@@ -7,7 +7,7 @@ SAIDA = sw/saida.pgm
 
 SRCS := main.cpp
 OBJS := $(SRCS:.cpp=.o)
-COMPONENTS := mips memory bus peripheral
+COMPONENTS := mips memory bus peripheral complex
 
 export INC_DIR := -I. `pkg-config --cflags systemc` `pkg-config --cflags archc` `pkg-config --cflags tlm` \
 						$(foreach c, $(COMPONENTS), -I $(c)) 
