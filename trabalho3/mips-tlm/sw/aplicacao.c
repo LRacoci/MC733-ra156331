@@ -6,8 +6,15 @@
 
 #define PI 3.14159265358979323846
 
-#define LOCK_ADD 536870912U
-#define COMPLEX_AC_ADD LOCK_ADD + 4U
+#define MEMBASE 0
+#define MEMSIZE 67108864U //536870912U
+#define LOCK_BASE MEMSIZE
+#define LOCK_SIZE 4U
+#define COMPLEX_BASE LOCK_BASE + LOCK_SIZE
+#define COMPLEX_SIZE (2*2+3*2)*4U
+#define COS_ADD COMPLEX_BASE + COMPLEX_SIZE
+#define SIN_ADD COS_ADD + 4U
+
 
 typedef struct _PGMData {
 	int row;
@@ -22,11 +29,11 @@ typedef struct Complex {
 } Complex;
 
 typedef struct ComplexAc{
-	Complex args[2];
-	Complex resp[3];
+	volatile Complex args[2];
+	volatile Complex resp[3];
 } ComplexAc;
 
-ComplexAc * complexAc = (ComplexAc *) COMPLEX_AC_ADD;
+volatile ComplexAc * complexAdd = (ComplexAc *) COMPLEX_BASE;
 
 PGMData dados;
 Complex F[512][512], P[512][512];
@@ -202,14 +209,32 @@ void desloca_origem(int imagem[512][512], int row, int col) {
 	}
 
 }
+
+
 void complexToString(char * str, Complex z){
 	sprintf(str, "(%f, %f)", z.a, z.b);
 }
 Complex operation(unsigned short int op, Complex x, Complex y){
-	printf("%p\n", complexAc);
-	complexAc->args[0] = x;
-	complexAc->args[1] = y;
-	return complexAc->resp[op];
+	printf("x = (%f, %f)\n", x.a, x.b);
+	printf("y = (%f, %f)\n", y.a, y.b);
+	printf("complexAdd = %p\n", complexAdd);
+	char str_x[] = "";
+	char str_y[] = "";
+	char str_z[] = "";
+	complexToString(str_x, x);
+	printf("str_x = %s\n", str_x);
+	complexToString(str_y, y);
+	printf("str_y = %s\n", str_y);
+	
+	complexAdd->args[0] = x;
+	complexAdd->args[1] = y;
+	Complex z = complexAdd->resp[op];
+	complexToString(str_z, z);
+	printf("str_z = %s\n", str_z);
+
+	printf("op: %s %c %s = %s\n", str_x, ((op == 0) ? '+' : (op == 1) ? '*' : '^'), str_y, str_z);
+
+	return z;
 }
 
 Complex multiply(Complex x, Complex y) {
@@ -309,13 +334,6 @@ void transforma_intervalo(int f[512][512], Complex F[512][512], int row, int col
 }
 
 int main(int ac, char *av[]) {
-	Complex x = {1,2};
-	Complex y = {3,4};
-	Complex z = operation(0,x,y);
-	char strZ[] = "(32541611,35210615)";
-	complexToString(strZ, z);
-	printf("%s", strZ);
-	/*
 	//PGMData *dados;
 	int i, j;
 	//Complex **F;
@@ -341,7 +359,6 @@ int main(int ac, char *av[]) {
 
 	//deallocate_Complex_matrix(F, dados->row);
 	//free(dados);
-	*/
 	exit(0);
 	return 0;
 }
