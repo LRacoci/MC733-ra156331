@@ -50,6 +50,9 @@
 #define LOCK_SIZE 4U
 #define COMPLEX_BASE LOCK_BASE + LOCK_SIZE
 #define COMPLEX_SIZE (2*2+3*2)*4U
+#define COS_ADD COMPLEX_BASE + COMPLEX_SIZE
+#define SIN_ADD COS_ADD + 4U
+#define TRIGONOMETRIC_SIZE 8U
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +75,7 @@ public:
   ac_tlm_port MEM_port;
   ac_tlm_port PERIPHERAL_port;
   ac_tlm_port COMPLEX_port;
+  ac_tlm_port TRIGONOMETRIC_port;
 
 
   /**

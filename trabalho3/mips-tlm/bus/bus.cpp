@@ -48,7 +48,8 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
   target_export("iport"),
   MEM_port("MEM_port", MEMSIZE), // This is the memory port, assigned for 5MB
   PERIPHERAL_port("PERIPHERAL_port", LOCK_SIZE), // This is the peripheral port
-  COMPLEX_port("COMPLEX_port", COMPLEX_SIZE)
+  COMPLEX_port("COMPLEX_port", COMPLEX_SIZE),
+  TRIGONOMETRIC_port("TRIGONOMETRIC_port", TRIGONOMETRIC_SIZE)
 {
 	/// Binds target_export to the memory
 	target_export(*this);
@@ -65,16 +66,27 @@ ac_tlm_bus::~ac_tlm_bus()
 /// statement inside this method. Notice that ac_tlm_req has an address field.
 ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request){
 	ac_tlm_rsp response;
+	
 
 	if(request.addr < MEMSIZE) {
 
 	  response = MEM_port->transport(request);
 
-	} else if(request.addr == MEMSIZE){
+	} else 
+	if(request.addr == MEMSIZE){
 
 	  response = PERIPHERAL_port->transport(request);
-	} else if(COMPLEX_BASE <= request.addr and request.addr < COMPLEX_BASE + COMPLEX_SIZE){
+
+	} else 
+	if(COMPLEX_BASE <= request.addr and request.addr < COMPLEX_BASE + COMPLEX_SIZE){
+
+		cout << "bus complex transport request addr" << request.addr<< endl;
 		response = COMPLEX_port->transport(request);
+	}else 
+	if(request.addr == COS_ADD or request.addr == SIN_ADD){
+
+		cout << "bus trigonometric transport request addr" << request.addr<< endl;
+		response = TRIGONOMETRIC_port->transport(request);
 	}
 	return response;
 }

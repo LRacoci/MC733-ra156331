@@ -1,14 +1,13 @@
 //////////////////////////////////////////////////////////////////////////////
 
-#ifndef _COMPLEX_H_
-#define _COMPLEX_H_
+#ifndef AC_TLM_TRIGONOMETRIC_H_
+#define AC_TLM_TRIGONOMETRIC_H_
 
 //////////////////////////////////////////////////////////////////////////////
 
 // Standard includes
 // SystemC includes
-#include <systemc.h>
-#include "../bus/bus.h"
+#include <systemc>
 // ArchC includes
 #include "ac_tlm_protocol.H"
 
@@ -20,27 +19,30 @@ using tlm::tlm_transport_if;
 //////////////////////////////////////////////////////////////////////////////
 
 //#define DEBUG
-typedef struct Complex {
-    float re;
-    float im;
-} Complex;
 
-/// A TLM complex module
-class ac_tlm_complex :
+/// Namespace to isolate memory from ArchC
+namespace user
+{
+
+/// A TLM memory
+class ac_tlm_trigonometric:
   public sc_module,
   public ac_tlm_transport_if // Using ArchC TLM protocol
 {
 public:
-  /// Variavel Criada
-  Complex args[2];
-  Complex resp[3];
-  unsigned counter = 0;
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
+
+  SC_HAS_PROCESS(ac_tlm_trigonometric);
+
+  float arg;
+
   /// Internal write
   ac_tlm_rsp_status writem( const uint32_t & , const uint32_t & );
   /// Internal read
   ac_tlm_rsp_status readm( const uint32_t & , uint32_t & );
+
+  void send_int();
 
   /**
    * Implementation of TLM transport method that
@@ -83,15 +85,15 @@ public:
    * @param k Memory size in kilowords.
    *
    */
-  ac_tlm_complex( sc_module_name module_name , int k = 4 );
+  ac_tlm_trigonometric( sc_module_name module_name , int k = 8 );
 
   /**
    * Default destructor.
    */
-  ~ac_tlm_complex();
-
-
+  ~ac_tlm_trigonometric();
 
 };
 
-#endif //_COMPLEX_H_
+};
+
+#endif //AC_TLM_PERIPHERAL_H_

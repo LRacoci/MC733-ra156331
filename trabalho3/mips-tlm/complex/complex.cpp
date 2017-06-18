@@ -43,6 +43,9 @@ ac_tlm_rsp_status ac_tlm_complex::writem( const uint32_t &a , const uint32_t &d 
 		//counter = 0;		
 		*(float*)(&args + a - COMPLEX_BASE) = (float) ntohl(d);//*((float*) & ntohl(d))
 	}
+	cout << "COMPLEX_BASE = " << COMPLEX_BASE << endl;
+	cout << "Complex: write " << (float) ntohl(d) << " to " << a << endl;
+	return SUCCESS;
 }
 
 /** Internal Read
@@ -61,7 +64,6 @@ ac_tlm_rsp_status ac_tlm_complex::readm( const uint32_t &a , uint32_t &d )
 	}
 	counter = 0;
 	*/
-
 	resp[0].re = args[0].re + args[0].re;
 	resp[0].im = args[0].im + args[0].im;
 	
@@ -75,5 +77,7 @@ ac_tlm_rsp_status ac_tlm_complex::readm( const uint32_t &a , uint32_t &d )
 		//*((uint32_t *) &d) = htonl(*((uint32_t *) &real_part));
 		d = htonl(*((uint32_t *) (&resp + a - COMPLEX_ANSWER)));
 	}
+	cout << "COMPLEX_ANSWER = " << COMPLEX_ANSWER << endl;
+	cout << "Complex: read " << *((uint32_t *) (&resp + a - COMPLEX_ANSWER)) << " from " << a << endl;
 	return SUCCESS;
 }
