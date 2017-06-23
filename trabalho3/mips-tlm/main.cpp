@@ -29,7 +29,7 @@ const char *archc_options="-abi -dy ";
 #include "complex.h"
 #include "trigonometric.h"
 
-#define NUM_PROCS 1
+#define NUM_PROCS 2
 
 using namespace std;
 using namespace user;

@@ -2,7 +2,7 @@ TARGET=platform
 EXE = $(TARGET).x
 SW = sw/aplicacao.mips
 
-ENTRADA = sw/noise_blur_00.pgm
+ENTRADA = sw/mona_lisa.pgm
 SAIDA = sw/saida.pgm
 
 SRCS := main.cpp

@@ -16,7 +16,7 @@ ac_tlm_peripheral::ac_tlm_peripheral( sc_module_name module_name , int k ) :
 {
     /// Binds target_export to the memory
     target_export( *this );
-
+    ultimo_valor_escrito = 0;
 }
 
 /// Destructor

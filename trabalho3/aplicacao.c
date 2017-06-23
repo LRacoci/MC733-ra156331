@@ -209,7 +209,7 @@ Complex add(Complex x, Complex y) {
 }
 
 void DFT(int f[512][512], Complex F[512][512], int row, int col) {
-	int u, v, x, y;
+	int u, v, x, y, i, j;
 	float ang;
 	Complex z, aux;
 	//Complex **P;
@@ -244,6 +244,13 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 			F[v][u].a = aux.a;
 			F[v][u].b = aux.b;
 		}
+	}
+
+	for (i = 0; i < 10; i++) {
+		for (j = 0; j < 10; j++) {
+			printf("%d ", (int)(F[i][j].a*100));
+		}
+		printf("\n");
 	}
 
 	//deallocate_Complex_matrix(P, row);

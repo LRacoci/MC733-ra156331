@@ -67,16 +67,13 @@ ac_tlm_bus::~ac_tlm_bus()
 ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request){
 	ac_tlm_rsp response;
 	
-
 	if(request.addr < MEMSIZE) {
 
 	  response = MEM_port->transport(request);
 
 	} else 
 	if(request.addr == MEMSIZE){
-
 	  response = PERIPHERAL_port->transport(request);
-
 	} else 
 	if(COMPLEX_BASE <= request.addr and request.addr < COMPLEX_BASE + COMPLEX_SIZE){
 
