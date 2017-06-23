@@ -93,7 +93,8 @@ void readPGM(const char *file_name, PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
- 
+ 	data->col = 10;
+ 	data->row = 10;
 	//data->matrix = allocate_dynamic_matrix(data->row, data->col);
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
