@@ -24,12 +24,15 @@ const char *archc_options="-abi -dy ";
 #include <vector>
 #include "mips.H"
 #include "memory.h"
-#include "peripheral.h"
 #include "bus.h"
+#include "peripheral.h"
+#include "complex.h"
+#include "trigonometric.h"
 
 #define NUM_PROCS 1
 
 using namespace std;
+using namespace user;
 
 int sc_main(int ac, char *av[])
 {
@@ -51,6 +54,10 @@ int sc_main(int ac, char *av[])
 	ac_tlm_mem mem("mem");
 	// Peripheral
 	ac_tlm_peripheral peripheral("peripheral");
+	// Complex AC
+	ac_tlm_complex complex("complex");
+	// Trigonometric AC
+	ac_tlm_trigonometric trigonometric("trigonometric");
 
 #ifdef AC_DEBUG
 
@@ -71,6 +78,8 @@ int sc_main(int ac, char *av[])
 #endif
 
 	bus.PERIPHERAL_port(peripheral.target_export);
+	bus.COMPLEX_port(complex.target_export);
+	bus.TRIGONOMETRIC_port(trigonometric.target_export);
 #ifdef NUM_PROCS
 	for(int i = 0; i < NUM_PROCS; i++){
 		char** avi = (char**) malloc(ac*sizeof(char**));
@@ -82,9 +91,7 @@ int sc_main(int ac, char *av[])
 	mips_proc1.init(ac, av);
 	mips_proc1.set_prog_args();
 #endif
-
 	cerr << endl;
-	
 	sc_start();
 
 #ifdef NUM_PROCS

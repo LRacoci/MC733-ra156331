@@ -47,9 +47,9 @@ ac_tlm_bus::ac_tlm_bus(sc_module_name module_name):
   sc_module(module_name),
   target_export("iport"),
   MEM_port("MEM_port", MEMSIZE), // This is the memory port, assigned for 5MB
-  PERIPHERAL_port("PERIPHERAL_port", LOCK_SIZE), // This is the peripheral port
-  COMPLEX_port("COMPLEX_port", COMPLEX_SIZE),
-  TRIGONOMETRIC_port("TRIGONOMETRIC_port", TRIGONOMETRIC_SIZE)
+  PERIPHERAL_port("PERIPHERAL_port", LOCK_SIZE), // This is the peripheral 
+  TRIGONOMETRIC_port("TRIGONOMETRIC_port", TRIGONOMETRIC_SIZE),  
+  COMPLEX_port("COMPLEX_port", COMPLEX_SIZE)
 {
 	/// Binds target_export to the memory
 	target_export(*this);
@@ -87,6 +87,9 @@ ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request){
 
 		cout << "bus trigonometric transport request addr" << request.addr<< endl;
 		response = TRIGONOMETRIC_port->transport(request);
+	} else {
+		cout << "COS ADD = " << COS_ADD  << endl;
+		cout << "other " << request.addr << endl;
 	}
 	return response;
 }

@@ -48,10 +48,10 @@
 #define MEMSIZE 67108864U //536870912U
 #define LOCK_BASE MEMSIZE
 #define LOCK_SIZE 4U
-#define COMPLEX_BASE LOCK_BASE + LOCK_SIZE
+#define COMPLEX_BASE (LOCK_BASE + LOCK_SIZE)
 #define COMPLEX_SIZE (2*2+3*2)*4U
-#define COS_ADD COMPLEX_BASE + COMPLEX_SIZE
-#define SIN_ADD COS_ADD + 4U
+#define COS_ADD (COMPLEX_BASE + COMPLEX_SIZE)
+#define SIN_ADD (COS_ADD + 4U)
 #define TRIGONOMETRIC_SIZE 8U
 
 //////////////////////////////////////////////////////////////////////////////
@@ -74,8 +74,8 @@ public:
   sc_export<ac_tlm_transport_if> target_export;
   ac_tlm_port MEM_port;
   ac_tlm_port PERIPHERAL_port;
-  ac_tlm_port COMPLEX_port;
   ac_tlm_port TRIGONOMETRIC_port;
+  ac_tlm_port COMPLEX_port;
 
 
   /**

@@ -71,6 +71,7 @@ ac_tlm_rsp_status ac_tlm_trigonometric::readm( const uint32_t &a , uint32_t &d )
         //d = htonl(aux);
         fdata = sin(arg);
 	}
+	cout << "Resposta da operação = " << fdata << endl;
     uint32_t data = htobe32(*reinterpret_cast<uint32_t*>(&fdata));
 
     d = data;
