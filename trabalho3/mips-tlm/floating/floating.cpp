@@ -42,15 +42,16 @@ ac_tlm_rsp_status ac_tlm_floating::writem( const uint32_t &a , const uint32_t &d
 	//cout << "writing... addr: " <<  std::hex  << a << " data: " << d << endl;
 	//uint32_t aux = ntohl(d);
 	//arg = *((float*) &aux);
+	int proc_id = (a - FLOATING_BASE)/FLOATING_SIZE;
 	uint32_t data = be32toh(d);
 	float fdata = *reinterpret_cast<float*>(&data);
 	if(a == FLOATING_ARG1){
-		arg1 = fdata;
-		cout << "Simulator arg1:" <<  arg1 << endl;
+		arg1[proc_id] = fdata;
+		cout << "Simulator arg1[" << proc_id << "]:" <<  arg1[proc_id] << endl;
 	}else
 	if(a == FLOATING_ARG2){
-		arg2 = fdata;
-		cout << "Simulator arg2:" <<  arg2 << endl;
+		arg2[proc_id] = fdata;
+		cout << "Simulator arg2[" << proc_id << "]:" <<  arg2[proc_id] << endl;
 	}else
 	return SUCCESS;
 }
@@ -64,26 +65,35 @@ ac_tlm_rsp_status ac_tlm_floating::writem( const uint32_t &a , const uint32_t &d
 ac_tlm_rsp_status ac_tlm_floating::readm( const uint32_t &a , uint32_t &d )
 {
 	//cout << "reading... addr: " << std::hex << a << " data: " << d << endl;
+	int proc_id = (a - FLOATING_BASE)/FLOATING_SIZE;
 	float fdata;
     if(a == FLOATING_ADD ){
-    	cout << arg1 << " + " << arg2 << " = ";
-    	fdata = arg1 + arg2;
+    	cout << arg1[proc_id] << " + " << arg2[proc_id] << " = ";
+    	fdata = arg1[proc_id] + arg2[proc_id];
     } else
 	if(a == FLOATING_SUB ){
-		cout << arg1 << " - " << arg2 << " = ";
-		fdata = arg1 - arg2;
+		cout << arg1[proc_id] << " - " << arg2[proc_id] << " = ";
+		fdata = arg1[proc_id] - arg2[proc_id];
 	} else
 	if(a == FLOATING_MULT){
-		cout << arg1 << " * " << arg2 << " = ";
-		fdata = arg1 * arg2;
+		cout << arg1[proc_id] << " * " << arg2[proc_id] << " = ";
+		fdata = arg1[proc_id] * arg2[proc_id];
 	} else
 	if(a == FLOATING_DIVI){
-		cout << arg1 << " / " << arg2 << " = ";
-		fdata = arg1 / arg2;
+		cout << arg1[proc_id] << " / " << arg2[proc_id] << " = ";
+		fdata = arg1[proc_id] / arg2[proc_id];
+	} else
+	if(a == FLOATING_LOG2){
+		cout << "log2(" << arg1[proc_id]  << ") = ";
+		fdata = log2(arg1[proc_id]);
+	} else
+	if(a == FLOATING_SQRT){
+		cout << "sqrt(" << arg1[proc_id] << ") = ";
+		fdata = sqrt(arg1[proc_id]);
 	}
 	cout << fdata << '@' << a << endl;
     uint32_t data = htobe32(*reinterpret_cast<uint32_t*>(&fdata));
     d = data;
 	return SUCCESS;
-	
+
 }

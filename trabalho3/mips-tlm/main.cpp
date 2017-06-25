@@ -29,8 +29,6 @@ const char *archc_options="-abi -dy ";
 #include "floating.h"
 #include "trigonometric.h"
 
-#define NUM_PROCS 1
-
 using namespace std;
 using namespace user;
 

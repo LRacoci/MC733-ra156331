@@ -26,7 +26,7 @@ class ac_tlm_floating :
 {
 public:
   /// Variavel Criada
-  float arg1, arg2;
+  float arg1[NUM_PROCS], arg2[NUM_PROCS];
   /// Exposed port with ArchC interface
   sc_export< ac_tlm_transport_if > target_export;
   /// Internal write

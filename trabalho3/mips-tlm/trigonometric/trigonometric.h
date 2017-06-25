@@ -35,7 +35,7 @@ public:
 
   SC_HAS_PROCESS(ac_tlm_trigonometric);
 
-  float arg;
+  float arg[NUM_PROCS];
 
   /// Internal write
   ac_tlm_rsp_status writem( const uint32_t & , const uint32_t & );

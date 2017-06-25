@@ -43,6 +43,9 @@
 #include "ac_tlm_protocol.H"
 #include  "ac_tlm_port.H"
 
+#define NUM_PROCS 1
+
+
 
 #define MEMBASE 0
 #define MEMSIZE 67108864U //536870912U
@@ -56,12 +59,14 @@
 #define FLOATING_SUB  (FLOATING_BASE + 3*4U)
 #define FLOATING_MULT (FLOATING_BASE + 4*4U)
 #define FLOATING_DIVI (FLOATING_BASE + 5*4U)
-#define FLOATING_SIZE (2+10)*4U
+#define FLOATING_LOG2 (FLOATING_BASE + 6*4U)
+#define FLOATING_SQRT (FLOATING_BASE + 7*4U)
+#define FLOATING_SIZE (NUM_PROCS *(2+10)*4U)
 
-#define TRIG_BASE (FLOATING_BASE + FLOATING_SIZE)
-#define COS_ADD TRIG_BASE
-#define SIN_ADD (COS_ADD + 4U)
-#define TRIGONOMETRIC_SIZE 8U
+#define TRIGONOMETRIC_BASE (FLOATING_BASE + FLOATING_SIZE)
+#define COS_ADD (TRIGONOMETRIC_BASE + 0*4U)
+#define SIN_ADD (TRIGONOMETRIC_BASE + 1*4U)
+#define TRIGONOMETRIC_SIZE (NUM_PROCS* 8U)
 
 //////////////////////////////////////////////////////////////////////////////
 
