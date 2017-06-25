@@ -26,10 +26,10 @@ const char *archc_options="-abi -dy ";
 #include "memory.h"
 #include "bus.h"
 #include "peripheral.h"
-#include "complex.h"
+#include "floating.h"
 #include "trigonometric.h"
 
-#define NUM_PROCS 2
+#define NUM_PROCS 1
 
 using namespace std;
 using namespace user;
@@ -54,10 +54,10 @@ int sc_main(int ac, char *av[])
 	ac_tlm_mem mem("mem");
 	// Peripheral
 	ac_tlm_peripheral peripheral("peripheral");
-	// Complex AC
-	ac_tlm_complex complex("complex");
 	// Trigonometric AC
 	ac_tlm_trigonometric trigonometric("trigonometric");
+	// Float AC
+	ac_tlm_floating floating("floating");
 
 #ifdef AC_DEBUG
 
@@ -78,8 +78,8 @@ int sc_main(int ac, char *av[])
 #endif
 
 	bus.PERIPHERAL_port(peripheral.target_export);
-	bus.COMPLEX_port(complex.target_export);
 	bus.TRIGONOMETRIC_port(trigonometric.target_export);
+	bus.FLOATING_port(floating.target_export);
 #ifdef NUM_PROCS
 	for(int i = 0; i < NUM_PROCS; i++){
 		char** avi = (char**) malloc(ac*sizeof(char**));

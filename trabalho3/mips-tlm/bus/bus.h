@@ -48,9 +48,18 @@
 #define MEMSIZE 67108864U //536870912U
 #define LOCK_BASE MEMSIZE
 #define LOCK_SIZE 4U
-#define COMPLEX_BASE (LOCK_BASE + LOCK_SIZE)
-#define COMPLEX_SIZE (2*2+3*2)*4U
-#define COS_ADD (COMPLEX_BASE + COMPLEX_SIZE)
+
+#define FLOATING_BASE (LOCK_BASE + LOCK_SIZE)
+#define FLOATING_ARG1 (FLOATING_BASE + 0*4U)
+#define FLOATING_ARG2 (FLOATING_BASE + 1*4U)
+#define FLOATING_ADD  (FLOATING_BASE + 2*4U)
+#define FLOATING_SUB  (FLOATING_BASE + 3*4U)
+#define FLOATING_MULT (FLOATING_BASE + 4*4U)
+#define FLOATING_DIVI (FLOATING_BASE + 5*4U)
+#define FLOATING_SIZE (2+10)*4U
+
+#define TRIG_BASE (FLOATING_BASE + FLOATING_SIZE)
+#define COS_ADD TRIG_BASE
 #define SIN_ADD (COS_ADD + 4U)
 #define TRIGONOMETRIC_SIZE 8U
 
@@ -75,7 +84,7 @@ public:
   ac_tlm_port MEM_port;
   ac_tlm_port PERIPHERAL_port;
   ac_tlm_port TRIGONOMETRIC_port;
-  ac_tlm_port COMPLEX_port;
+  ac_tlm_port FLOATING_port;
 
 
   /**

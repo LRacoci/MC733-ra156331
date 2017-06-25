@@ -62,6 +62,7 @@ ac_tlm_rsp_status ac_tlm_trigonometric::readm( const uint32_t &a , uint32_t &d )
 	if (a == COS_ADD) {
 		//uint32_t aux = *((uint32_t *) &arg);
         //d = htonl(aux);
+        cout << "cos(" << arg << ") = ";
 		fdata = cos(arg);
 	}
 	// Calcula seno
@@ -69,9 +70,10 @@ ac_tlm_rsp_status ac_tlm_trigonometric::readm( const uint32_t &a , uint32_t &d )
 	if (a == SIN_ADD) {
 		//uint32_t aux = *((uint32_t *) &arg);
         //d = htonl(aux);
+        cout << "sin(" << arg << ") = ";
         fdata = sin(arg);
 	}
-	cout << "Resposta da operação = " << fdata << endl;
+	cout << fdata << '@' << a << endl;
     uint32_t data = htobe32(*reinterpret_cast<uint32_t*>(&fdata));
 
     d = data;
