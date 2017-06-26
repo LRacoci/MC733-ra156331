@@ -3,98 +3,18 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include <stdint.h>
 
-
-
-#define TRIG_ACELERATION
-#define FLOAT_ACELERATION
-
-
+#define PI 3.14159265358979323846
 
 #define MEMBASE 0
 #define MEMSIZE 67108864U //536870912U
 #define LOCK_BASE MEMSIZE
 #define LOCK_SIZE 4U
+#define COMPLEX_BASE LOCK_BASE + LOCK_SIZE
+#define COMPLEX_SIZE (2*2+3*2)*4U
+#define COS_ADD COMPLEX_BASE + COMPLEX_SIZE
+#define SIN_ADD COS_ADD + 4U
 
-#define FLOATING_BASE (LOCK_BASE + LOCK_SIZE)
-#define FLOATING_ARG1 (FLOATING_BASE + 0*4U)
-#define FLOATING_ARG2 (FLOATING_BASE + 1*4U)
-#define FLOATING_ADD  (FLOATING_BASE + 2*4U)
-#define FLOATING_SUB  (FLOATING_BASE + 3*4U)
-#define FLOATING_MULT (FLOATING_BASE + 4*4U)
-#define FLOATING_DIVI (FLOATING_BASE + 5*4U)
-#define FLOATING_LOG2 (FLOATING_BASE + 6*4U)
-#define FLOATING_SQRT (FLOATING_BASE + 7*4U)
-#define FLOATING_SIZE (2+10)*4U
-
-#define TRIG_BASE (FLOATING_BASE + FLOATING_SIZE)
-#define COS_ADD TRIG_BASE
-#define SIN_ADD (COS_ADD + 4U)
-#define TRIGONOMETRIC_SIZE 8U
-
-
-
-#ifdef TRIG_ACELERATION
-	#define COS_AC(x) (cos_ac((x)))
-#else
-	#define COS_AC(x) (cos((x)))
-#endif
-#ifdef TRIG_ACELERATION
-	#define SIN_AC(x) (sin_ac((x)))
-#else
-	#define SIN_AC(x) (sin((x)))
-#endif
-
-
-#ifdef FLOAT_ACELERATION
-	#define ADD_AC(x,y) (add_ac((x),(y)))
-#else
-	#define ADD_AC(x,y) ((x) + (y))
-#endif
-#ifdef FLOAT_ACELERATION
-	#define SUB_AC(x,y) (sub_ac((x),(y)))
-#else
-	#define SUB_AC(x,y) ((x) - (y))
-#endif
-#ifdef FLOAT_ACELERATION
-	#define MUL_AC(x,y) (mul_ac((x),(y)))
-#else
-	#define MUL_AC(x,y) ((x) * (y))
-#endif
-#ifdef FLOAT_ACELERATION
-	#define DIV_AC(x,y) (div_ac((x),(y)))
-#else
-	#define DIV_AC(x,y) ((x) / (y))
-#endif
-
-#ifdef FLOAT_ACELERATION
-	#define LOG2_AC(x) (log2_ac((x)))
-#else
-	#define LOG2_AC(x) log2((x))
-#endif
-#ifdef FLOAT_ACELERATION
-	#define SQRT_AC(x) (sqrt_ac((x)))
-#else
-	#define SQRT_AC(x) sqrt((x))
-#endif
-
-
-#define PI 3.14159265358979323846
-
-#define HI(num) (((num) & 0x0000FF00) >> 8)
-#define LO(num) ((num) & 0x000000FF)
-
-volatile struct trig {
-	float cos, sin;
-} * trig = (struct trig *) TRIG_BASE;
-
-volatile struct arit {
-	float x,y,add,sub,mul,div, log2,sqrt, r9,r10;
-} * arit = (struct arit *) FLOATING_BASE;
-
-
-volatile int *outro = (int *) 67109040;
 
 typedef struct _PGMData {
 	int row;
@@ -108,48 +28,48 @@ typedef struct Complex {
     float b;
 } Complex;
 
+typedef struct ComplexAc{
+	volatile Complex args[2];
+	volatile Complex resp[3];
+} ComplexAc;
+
+volatile ComplexAc * complexAdd = (ComplexAc *) COMPLEX_BASE;
+
 PGMData dados;
 Complex F[512][512], P[512][512];
 
+#define HI(num) (((num) & 0x0000FF00) >> 8)
+#define LO(num) ((num) & 0x000000FF)
 
-float cos_ac(float x){
-	trig->cos = x;
-	return trig->cos;
+/*int **allocate_dynamic_matrix(int row, int col) {
+	int **ret_val;
+	int i;
+ 
+	ret_val = (int **)malloc(sizeof(int *) * row);
+	if (ret_val == NULL) {
+		perror("memory allocation failure");
+		exit(EXIT_FAILURE);
+	}
+ 
+	for (i = 0; i < row; ++i) {
+		ret_val[i] = (int *)malloc(sizeof(int) * col);
+		if (ret_val[i] == NULL) {
+			perror("memory allocation failure");
+			exit(EXIT_FAILURE);
+		}
+	}
+ 
+	return ret_val;
 }
+ 
+void deallocate_dynamic_matrix(int **matrix, int row) {
+	int i;
+ 
+	for (i = 0; i < row; ++i)
+		free(matrix[i]);
+	free(matrix);
 
-float sin_ac(float x){
-	trig->sin = x;
-	return trig->sin;
-}
-
-float add_ac(float x, float y){
-	arit->x = x;
-	arit->y = y;
-	return arit->add;
-}
-float sub_ac(float x, float y){
-	arit->x = x;
-	arit->y = y;
-	return arit->sub;
-}
-float mul_ac(float x, float y){
-	arit->x = x;
-	arit->y = y;
-	return arit->mul;
-}
-float div_ac(float x, float y){
-	arit->x = x;
-	arit->y = y;
-	return arit->div;
-}
-float log2_ac(float x){
-	arit->log2 = x;
-	return arit->log2;
-}
-float sqrt_ac(float x){
-	arit->sqrt = x;
-	return arit->sqrt;
-}
+}*/
 
 void SkipComments(FILE *fp) {
 	int ch;
@@ -190,8 +110,7 @@ void readPGM(const char *file_name, PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
- 	data->row = 10;
- 	data->col = 10;
+ 
 	//data->matrix = allocate_dynamic_matrix(data->row, data->col);
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
@@ -248,6 +167,36 @@ void writePGM(const char *filename, const PGMData *data) {
 
 }
 
+/*Complex **allocate_Complex_matrix(int row, int col) {
+	Complex **ret_val;
+	int i;
+ 
+	ret_val = (Complex **)malloc(sizeof(Complex *) * row);
+	if (ret_val == NULL) {
+		perror("memory allocation failure");
+		exit(EXIT_FAILURE);
+	}
+ 
+	for (i = 0; i < row; ++i) {
+		ret_val[i] = (Complex *)malloc(sizeof(Complex) * col);
+		if (ret_val[i] == NULL) {
+			perror("memory allocation failure");
+			exit(EXIT_FAILURE);
+		}
+	}
+ 
+	return ret_val;
+}
+ 
+void deallocate_Complex_matrix(Complex **matrix, int row) {
+	int i;
+ 
+	for (i = 0; i < row; ++i)
+		free(matrix[i]);
+	free(matrix);
+
+}*/
+
 void desloca_origem(int imagem[512][512], int row, int col) {
 	int i, j;
 
@@ -261,21 +210,44 @@ void desloca_origem(int imagem[512][512], int row, int col) {
 
 }
 
-Complex complex_multiply(Complex x, Complex y) {
+
+void complexToString(char * str, Complex z){
+	sprintf(str, "(%f, %f)", z.a, z.b);
+}
+Complex operation(unsigned short int op, Complex x, Complex y){
+	printf("x = (%f, %f)\n", x.a, x.b);
+	printf("y = (%f, %f)\n", y.a, y.b);
+	printf("complexAdd = %p\n", complexAdd);
+	char str_x[] = "";
+	char str_y[] = "";
+	char str_z[] = "";
+	complexToString(str_x, x);
+	printf("str_x = %s\n", str_x);
+	complexToString(str_y, y);
+	printf("str_y = %s\n", str_y);
+	
+	complexAdd->args[0] = x;
+	complexAdd->args[1] = y;
+	Complex z = complexAdd->resp[op];
+	complexToString(str_z, z);
+	printf("str_z = %s\n", str_z);
+
+	printf("op: %s %c %s = %s\n", str_x, ((op == 0) ? '+' : (op == 1) ? '*' : '^'), str_y, str_z);
+
+	return z;
+}
+
+Complex multiply(Complex x, Complex y) {
     Complex z;
-    //z.a = x.a * y.a - x.b * y.b;
-    z.a = SUB_AC(MUL_AC(x.a, y.a), MUL_AC(x.b, y.b));
-    //z.b = x.a * y.b + x.b * y.a;
-    z.b = ADD_AC(MUL_AC(x.a, y.b), MUL_AC(x.b, y.a));
+    z.a = x.a * y.a - x.b * y.b;
+    z.b = x.a * y.b + x.b * y.a;
     return z;
 }
 
-Complex complex_add(Complex x, Complex y) {
+Complex add(Complex x, Complex y) {
 	Complex z;
-	//z.a = x.a + y.a;
-	z.a = ADD_AC(x.a, y.a);
-	//z.b = x.b + y.b;
-	z.b = ADD_AC(x.b, y.b);
+	z.a = x.a + y.a;
+	z.b = x.b + y.b;
 	return z;
 }
 
@@ -291,14 +263,11 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 		for (u = 0; u < col; u++) {
 			aux.a = 0;
 			aux.b = 0;
-			//ang = (2 * PI * u / col);
-			ang = DIV_AC(MUL_AC(MUL_AC(2,PI),u), col);
+			ang = (2 * PI * u / col);
 			for (x = 0; x < col; x++) {
-				//z.a = f[v][x] * COS_AC(x * ang);
-				z.a = MUL_AC(f[v][x], COS_AC(MUL_AC(x, ang)));
-				//z.b = -f[v][x] * SIN_AC(x * ang);
-				z.b = -MUL_AC(f[v][x], SIN_AC(MUL_AC(x, ang)));
-				aux = complex_add(aux, z);
+				z.a = f[v][x] * cos(x * ang);
+				z.b = -f[v][x] * sin(x * ang);
+				aux = add(aux, z);
 			}
 			P[v][u].a = aux.a;
 			P[v][u].b = aux.b;
@@ -311,11 +280,9 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 			aux.b = 0;
 			ang = (2 * PI * v / row);
 			for (y = 0; y < row; y++) {
-				//z.a = cos(y * ang);
-				z.a = COS_AC(MUL_AC(y , ang));
-				//z.b = -sin(y * ang);
-				z.b = -SIN_AC(MUL_AC(y , ang));
-				aux = complex_add(aux, complex_multiply(P[y][u], z));
+				z.a = cos(y * ang);
+				z.b = -sin(y * ang);
+				aux = add(aux, multiply(P[y][u], z));
 			}
 			F[v][u].a = aux.a;
 			F[v][u].b = aux.b;
@@ -326,8 +293,7 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 
 	for (v = 0; v < row; v++) {
 		for (u = 0; u < col; u++) {
-			//F[v][u].a = 20 * log2(sqrt((F[v][u].a * F[v][u].a) + (F[v][u].b * F[v][u].b)));
-			F[v][u].a = MUL_AC(20,log2(sqrt(ADD_AC(MUL_AC(F[v][u].a, F[v][u].a), MUL_AC(F[v][u].b, F[v][u].b)))));
+			F[v][u].a = 20 * log2(sqrt((F[v][u].a * F[v][u].a) + (F[v][u].b * F[v][u].b)));
 		}
 	}
 
@@ -361,47 +327,13 @@ void transforma_intervalo(int f[512][512], Complex F[512][512], int row, int col
 	
 	for (v = 0; v < row; v++) {
 		for (u = 0; u < col; u++) {
-			//f[v][u] = 255 * (F[v][u].a - min) / (max - min);
-			f[v][u] = MUL_AC(255, DIV_AC(SUB_AC(F[v][u].a,min), SUB_AC(max,min)));
+			f[v][u] = 255 * (F[v][u].a - min) / (max - min);
 		}
 	}
 
 }
 
-void printFloat(float src){
-	int i;
-	union float_bytes {
-       float val;
-       unsigned x;
-    } data;
-    data.val = src;
-	unsigned x = data.x;
-	char s = (x>>31)?'-':'+';
-	short e  = ((x<<1)>>(32-8-1))-256;
-	unsigned frac = ((x<<9)>>(32-9));
-	frac |= 1<<(32-9);
-	printf("%X(%c|%d|%x)", x, s, e, frac);
-	e = (e * 10) / 3;
-	float y = src;
-	if(e > 0){
-		for (i = 0; i < e; i++){
-			//y /= 10;
-			y = DIV_AC(y,10);
-		} 
-	}else{
-		for (i = 0; i > e; i--){
-			//y *= 10;
-			y = MUL_AC(y,10);
-		} 
-	}
-	long z = (long) y;
-	printf("%de%d\n", z, e);
-}
-
 int main(int ac, char *av[]) {
-	//printf("(MUL_AC(27.0f, 42.0f)*100000.0) = %d\n",(int)((MUL_AC(27.0f, 42.0f)*100000.0) ) );
-	
-
 	//PGMData *dados;
 	int i, j;
 	//Complex **F;

@@ -36,6 +36,8 @@
 
 // Deifnie limite da memória
 
+//#define DEBUG
+
 
 #include "bus.h"
 
@@ -76,14 +78,22 @@ ac_tlm_rsp ac_tlm_bus::transport(const ac_tlm_req &request){
 	  response = PERIPHERAL_port->transport(request);
 	} else 
 	if(FLOATING_BASE <= request.addr and request.addr < FLOATING_BASE + FLOATING_SIZE){
-		cout << "bus floating transport request addr" << request.addr<< endl;
+		#ifdef DEBUG
+		cout << "bus floating transport request addr " << request.addr<< endl;
+		cout << "(addr - base)/4 = " << (request.addr - FLOATING_BASE)/4 << endl;
+		#endif
 		response = FLOATING_port->transport(request);
 	}else 
-	if(request.addr == COS_ADD or request.addr == SIN_ADD){
-		cout << "bus trigonometric transport request addr" << request.addr<< endl;
+	if(TRIGONOMETRIC_BASE <= request.addr and request.addr < TRIGONOMETRIC_BASE + TRIGONOMETRIC_SIZE){
+		#ifdef DEBUG
+		cout << "bus trigonometric transport request addr " << request.addr<< endl;
+		cout << "(addr - base)/4 = " << (request.addr - TRIGONOMETRIC_BASE)/4 << endl;
+		#endif
 		response = TRIGONOMETRIC_port->transport(request);
 	} else {
+		#ifdef DEBUG
 		cout << "other " << request.addr << endl;
+		#endif
 	}
 	return response;
 }

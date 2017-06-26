@@ -43,7 +43,7 @@
 #include "ac_tlm_protocol.H"
 #include  "ac_tlm_port.H"
 
-#define NUM_PROCS 1
+#define NUM_PROCS 2
 
 
 
@@ -61,12 +61,12 @@
 #define FLOATING_DIVI (FLOATING_BASE + 5*4U)
 #define FLOATING_LOG2 (FLOATING_BASE + 6*4U)
 #define FLOATING_SQRT (FLOATING_BASE + 7*4U)
-#define FLOATING_SIZE (NUM_PROCS *(2+10)*4U)
+#define FLOATING_SIZE (NUM_PROCS * (2+6)*4U)
 
 #define TRIGONOMETRIC_BASE (FLOATING_BASE + FLOATING_SIZE)
 #define COS_ADD (TRIGONOMETRIC_BASE + 0*4U)
 #define SIN_ADD (TRIGONOMETRIC_BASE + 1*4U)
-#define TRIGONOMETRIC_SIZE (NUM_PROCS* 8U)
+#define TRIGONOMETRIC_SIZE (NUM_PROCS * 8U)
 
 //////////////////////////////////////////////////////////////////////////////
 

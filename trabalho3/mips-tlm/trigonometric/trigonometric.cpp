@@ -41,11 +41,15 @@ ac_tlm_rsp_status ac_tlm_trigonometric::writem( const uint32_t &a , const uint32
 	//cout << "writing... addr: " <<  std::hex  << a << " data: " << d << endl;
 	//uint32_t aux = ntohl(d);
 	//arg[proc_id] = *((float*) &aux);
-	int proc_id = (a - TRIGONOMETRIC_BASE)/TRIGONOMETRIC_SIZE;
+	int proc_id = (a - TRIGONOMETRIC_BASE)/(TRIGONOMETRIC_SIZE/NUM_PROCS);
+	uint32_t addr = TRIGONOMETRIC_BASE + (a - TRIGONOMETRIC_BASE)%(TRIGONOMETRIC_SIZE/NUM_PROCS);
 	uint32_t data = be32toh(d);
 	float fdata = *reinterpret_cast<float*>(&data);
 	arg[proc_id] = fdata;
+	#ifdef DEBUG
+	cout << "proc_id = " << proc_id << endl;
 	cout << "Simulator arg[proc_id]:" <<  arg[proc_id] << endl;
+	#endif
 	return SUCCESS;
 }
 
@@ -58,24 +62,34 @@ ac_tlm_rsp_status ac_tlm_trigonometric::writem( const uint32_t &a , const uint32
 ac_tlm_rsp_status ac_tlm_trigonometric::readm( const uint32_t &a , uint32_t &d )
 {
 	//cout << "reading... addr: " << std::hex << a << " data: " << d << endl;
-	int proc_id = (a - TRIGONOMETRIC_BASE)/TRIGONOMETRIC_SIZE;
+	int proc_id = (a - TRIGONOMETRIC_BASE)/(TRIGONOMETRIC_SIZE/NUM_PROCS);
+	uint32_t addr = TRIGONOMETRIC_BASE + (a - TRIGONOMETRIC_BASE)%(TRIGONOMETRIC_SIZE/NUM_PROCS);
 	float fdata;
+	#ifdef DEBUG
+	cout << "proc_id = " << proc_id << endl;
+	#endif
 	// Calcula coseno,
-	if (a == COS_ADD) {
+	if (addr == COS_ADD) {
 		//uint32_t aux = *((uint32_t *) &arg[proc_id]);
         //d = htonl(aux);
+        #ifdef DEBUG
         cout << "cos(" << arg[proc_id] << ") = ";
+        #endif
 		fdata = cos(arg[proc_id]);
 	}
-	// Calcula seno
 	else 
-	if (a == SIN_ADD) {
+	// Calcula seno
+	if (addr == SIN_ADD) {
 		//uint32_t aux = *((uint32_t *) &arg[proc_id]);
         //d = htonl(aux);
+        #ifdef DEBUG
         cout << "sin(" << arg[proc_id] << ") = ";
+        #endif
         fdata = sin(arg[proc_id]);
 	}
+	#ifdef DEBUG
 	cout << fdata << '@' << a << endl;
+	#endif
     uint32_t data = htobe32(*reinterpret_cast<uint32_t*>(&fdata));
 
     d = data;
