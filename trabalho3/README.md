@@ -16,7 +16,7 @@ Será utilizada uma aplicação que calcula o Espectro de Fourier de uma imagem.
 
 ### Aceleração
 
-Serão implementados periféricos que realizam operações de ponto flutuante e números complexos.
+Serão implementados periféricos que realizam operações de ponto flutuante e operações trigonométricas.
 
 ### Experimentos
 
