@@ -43,7 +43,7 @@
 #include "ac_tlm_protocol.H"
 #include  "ac_tlm_port.H"
 
-#define NUM_PROCS 2
+#define NUM_PROCS 8
 
 
 

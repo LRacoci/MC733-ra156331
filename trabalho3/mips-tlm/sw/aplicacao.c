@@ -5,19 +5,16 @@
 #include <math.h>
 #include <float.h>
 
-
-#define TRIG_ACELERATION
+//#define TRIG_ACELERATION
 #define FLOAT_ACELERATION
 #define FLOAT_ACELERATION2
-
-
 
 #define MEMBASE 0
 #define MEMSIZE 67108864U //536870912U
 #define LOCK_BASE MEMSIZE
 #define LOCK_SIZE 4U
 
-#define NUM_PROCS 2
+#define NUM_PROCS 8
 
 #define FLOATING_BASE (LOCK_BASE + LOCK_SIZE)
 #define FLOATING_ARG1 (FLOATING_BASE + 0*4U)
@@ -35,7 +32,6 @@
 #define SIN_ADD (TRIGONOMETRIC_BASE + 1*4U)
 #define TRIGONOMETRIC_SIZE (NUM_PROCS* 8U)
 
-
 #ifdef TRIG_ACELERATION
 	#define COS_AC(x) (cos_ac((procID), (x)))
 #else
@@ -46,7 +42,6 @@
 #else
 	#define SIN_AC(x) (sin((x)))
 #endif
-
 
 #ifdef FLOAT_ACELERATION
 	#define ADD_AC(x,y) (add_ac((procID), (x),(y)))
@@ -82,7 +77,6 @@
 
 #define PI 3.14159265358979323846
 
-
 volatile struct trig {
 	float cos, sin;
 } * trig = (struct trig *) TRIGONOMETRIC_BASE;
@@ -90,7 +84,6 @@ volatile struct trig {
 volatile struct arit {
 	float x,y, add,sub,mul,div, log2,sqrt;
 } * arit = (struct arit *) FLOATING_BASE;
-
 
 float cos_ac(int procID, float x){
 	trig[procID].cos = x;
@@ -169,7 +162,6 @@ volatile float min = FLT_MAX;
 
 #define HI(num) (((num) & 0x0000FF00) >> 8)
 #define LO(num) ((num) & 0x000000FF)
-
 
 /* Adquire o lock de hardware */
 void AcquireGlobalLock() {
@@ -272,8 +264,7 @@ void readPGM(const char *file_name, volatile PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
-	data->col = 10;
-	data->row = 10;
+	
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
 			for (j = 0; j < data->col; ++j) {
@@ -369,7 +360,8 @@ void DFT(int procID, volatile int f[][100], volatile Complex F[][100], int row, 
 		for (u = 0; u < col; u++) {
 			aux.a = 0;
 			aux.b = 0;
-			ang = (2 * PI * u / col);
+			//ang = (2 * PI * u / col);
+			ang = DIV_AC(MUL_AC(MUL_AC(2,PI),u), col);
 			for (x = 0; x < col; x++) {
 				//z.a = f[v][x] * COS_AC(x * ang);
 				z.a = MUL_AC(f[v][x], COS_AC(MUL_AC(x, ang)));
@@ -393,7 +385,8 @@ void DFT(int procID, volatile int f[][100], volatile Complex F[][100], int row, 
 		for (u = 0; u < col; u++) {
 			aux.a = 0;
 			aux.b = 0;
-			ang = (2 * PI * v / dados.row);
+			//ang = (2 * PI * v / dados.row);
+			ang = DIV_AC(MUL_AC(MUL_AC(2,PI),v), dados.row);
 			for (y = 0; y < dados.row; y++) {
 				//z.a = cos(y * ang);
 				z.a = COS_AC(MUL_AC(y , ang));
@@ -465,7 +458,7 @@ void transforma_intervalo(int procID, volatile int f[][100], volatile Complex F[
 	for (v = procStartPoint; v < (row + procStartPoint); v++) {
 		for (u = 0; u < col; u++) {
 			//f[v][u] = 255 * (F[v][u].a - min) / (max - min);
-			f[v][u] = 255 * (F[v][u].a - min) / (max - min);
+			f[v][u] = MUL_AC(255, DIV_AC(SUB_AC(F[v][u].a,min), SUB_AC(max,min)));
 		}
 	}
 
@@ -477,9 +470,6 @@ int main(int ac, char *av[]) {
 	int procStartPoint = 0;
 	int procRow = 0;
 	int numberOfProc = 0;
-
-
-	unsigned qwerty;
 
 	if (ac != 3) {
 		printf("Numero errado de argumentos\n");
@@ -554,7 +544,6 @@ int main(int ac, char *av[]) {
 	// Só o zero escreve
 	if(procID == 0) {
 		writePGM(av[2], &dados);
-		// Incrementa quando terminar de transformar_intervalo
 	}
 
 	AcquireLock(&procIDCounterLock);

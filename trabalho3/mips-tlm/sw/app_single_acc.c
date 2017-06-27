@@ -5,12 +5,8 @@
 #include <math.h>
 #include <stdint.h>
 
-
-
 #define TRIG_ACELERATION
 #define FLOAT_ACELERATION
-
-
 
 #define MEMBASE 0
 #define MEMSIZE 67108864U //536870912U
@@ -26,14 +22,12 @@
 #define FLOATING_DIVI (FLOATING_BASE + 5*4U)
 #define FLOATING_LOG2 (FLOATING_BASE + 6*4U)
 #define FLOATING_SQRT (FLOATING_BASE + 7*4U)
-#define FLOATING_SIZE (2+10)*4U
+#define FLOATING_SIZE (2+6)*4U
 
 #define TRIG_BASE (FLOATING_BASE + FLOATING_SIZE)
 #define COS_ADD TRIG_BASE
 #define SIN_ADD (COS_ADD + 4U)
 #define TRIGONOMETRIC_SIZE 8U
-
-
 
 #ifdef TRIG_ACELERATION
 	#define COS_AC(x) (cos_ac((x)))
@@ -45,7 +39,6 @@
 #else
 	#define SIN_AC(x) (sin((x)))
 #endif
-
 
 #ifdef FLOAT_ACELERATION
 	#define ADD_AC(x,y) (add_ac((x),(y)))
@@ -79,7 +72,6 @@
 	#define SQRT_AC(x) sqrt((x))
 #endif
 
-
 #define PI 3.14159265358979323846
 
 #define HI(num) (((num) & 0x0000FF00) >> 8)
@@ -93,14 +85,13 @@ volatile struct arit {
 	float x,y,add,sub,mul,div, log2,sqrt, r9,r10;
 } * arit = (struct arit *) FLOATING_BASE;
 
-
 volatile int *outro = (int *) 67109040;
 
 typedef struct _PGMData {
 	int row;
 	int col;
 	int max_gray;
-	int matrix[512][512];
+	int matrix[100][100];
 } PGMData;
 
 typedef struct Complex {
@@ -109,8 +100,7 @@ typedef struct Complex {
 } Complex;
 
 PGMData dados;
-Complex F[512][512], P[512][512];
-
+Complex F[100][100], P[100][100];
 
 float cos_ac(float x){
 	trig->cos = x;
@@ -190,9 +180,7 @@ void readPGM(const char *file_name, PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
- 	data->row = 10;
- 	data->col = 10;
-	//data->matrix = allocate_dynamic_matrix(data->row, data->col);
+
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
 			for (j = 0; j < data->col; ++j) {
@@ -244,11 +232,10 @@ void writePGM(const char *filename, const PGMData *data) {
 	}
  
 	fclose(pgmFile);
-	//deallocate_dynamic_matrix(data->matrix, data->row);
 
 }
 
-void desloca_origem(int imagem[512][512], int row, int col) {
+void desloca_origem(int imagem[100][100], int row, int col) {
 	int i, j;
 
 	for (i = 0; i < row; i++) {
@@ -279,13 +266,10 @@ Complex complex_add(Complex x, Complex y) {
 	return z;
 }
 
-void DFT(int f[512][512], Complex F[512][512], int row, int col) {
+void DFT(int f[100][100], Complex F[100][100], int row, int col) {
 	int u, v, x, y;
 	float ang;
 	Complex z, aux;
-	//Complex **P;
-
-	//P = allocate_Complex_matrix(row, col);
 
 	for (v = 0; v < row; v++) {
 		for (u = 0; u < col; u++) {
@@ -309,7 +293,8 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 		for (u = 0; u < col; u++) {
 			aux.a = 0;
 			aux.b = 0;
-			ang = (2 * PI * v / row);
+			//ang = (2 * PI * v / row);
+			ang = DIV_AC(MUL_AC(MUL_AC(2,PI),v), row);
 			for (y = 0; y < row; y++) {
 				//z.a = cos(y * ang);
 				z.a = COS_AC(MUL_AC(y , ang));
@@ -322,8 +307,6 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 		}
 	}
 
-	//deallocate_Complex_matrix(P, row);
-
 	for (v = 0; v < row; v++) {
 		for (u = 0; u < col; u++) {
 			//F[v][u].a = 20 * log2(sqrt((F[v][u].a * F[v][u].a) + (F[v][u].b * F[v][u].b)));
@@ -333,7 +316,7 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 
 }
 
-void max_min(Complex F[512][512], int row, int col, float *min, float *max) {
+void max_min(Complex F[100][100], int row, int col, float *min, float *max) {
 	float r_min = F[0][0].a, r_max = F[0][0].a;
 	int v, u;
 
@@ -353,7 +336,7 @@ void max_min(Complex F[512][512], int row, int col, float *min, float *max) {
 
 }
 
-void transforma_intervalo(int f[512][512], Complex F[512][512], int row, int col) {
+void transforma_intervalo(int f[100][100], Complex F[100][100], int row, int col) {
 	float max, min;
 	int v, u;
 
@@ -401,10 +384,7 @@ void printFloat(float src){
 int main(int ac, char *av[]) {
 	//printf("(MUL_AC(27.0f, 42.0f)*100000.0) = %d\n",(int)((MUL_AC(27.0f, 42.0f)*100000.0) ) );
 	
-
-	//PGMData *dados;
 	int i, j;
-	//Complex **F;
 
 	if (ac != 3) {
 		printf("Numero errado de argumentos\n");
@@ -412,12 +392,9 @@ int main(int ac, char *av[]) {
 		return 0;
 	}
 
-	//dados = (PGMData *) malloc(sizeof(PGMData));
 	readPGM(av[1], &dados);
 
 	desloca_origem(dados.matrix, dados.row, dados.col);
-
-	//F = allocate_Complex_matrix(dados->row, dados->col);
 
 	DFT(dados.matrix, F, dados.row, dados.col);
 
@@ -425,8 +402,6 @@ int main(int ac, char *av[]) {
 
 	writePGM(av[2], &dados);
 
-	//deallocate_Complex_matrix(F, dados->row);
-	//free(dados);
 	exit(0);
 	return 0;
 }

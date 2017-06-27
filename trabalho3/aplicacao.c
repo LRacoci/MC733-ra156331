@@ -93,8 +93,7 @@ void readPGM(const char *file_name, PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
- 	data->col = 10;
- 	data->row = 10;
+ 	
 	//data->matrix = allocate_dynamic_matrix(data->row, data->col);
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
@@ -244,13 +243,6 @@ void DFT(int f[512][512], Complex F[512][512], int row, int col) {
 			F[v][u].a = aux.a;
 			F[v][u].b = aux.b;
 		}
-	}
-
-	for (i = 0; i < 10; i++) {
-		for (j = 0; j < 10; j++) {
-			printf("%d ", (int)(F[i][j].a*100));
-		}
-		printf("\n");
 	}
 
 	//deallocate_Complex_matrix(P, row);

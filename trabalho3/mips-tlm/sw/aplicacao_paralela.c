@@ -146,8 +146,7 @@ void readPGM(const char *file_name, volatile PGMData *data) {
 	SkipComments(pgmFile);
 	fscanf(pgmFile, "%d", &data->max_gray);
 	fgetc(pgmFile);
-	data->col = 10;
-	data->row = 10;
+	
 	if (data->max_gray > 255)
 		for (i = 0; i < data->row; ++i)
 			for (j = 0; j < data->col; ++j) {

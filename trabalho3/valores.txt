@@ -1,0 +1,91 @@
+1 core sem acelerador
+    Number of instructions executed: 37306277437
+
+2 cores sem acelerador
+    Number of instructions executed: 18804574925
+    Number of instructions executed: 18916758252
+
+4 cores sem acelerador
+    Number of instructions executed: 9406758022
+    Number of instructions executed: 9411264960
+    Number of instructions executed: 9416004055
+    Number of instructions executed: 9514202285
+
+8 cores sem acelerador
+    Number of instructions executed: 5048770539
+    Number of instructions executed: 5132821016
+    Number of instructions executed: 4913529966
+    Number of instructions executed: 4930170643
+    Number of instructions executed: 4908464581
+    Number of instructions executed: 4911608194
+    Number of instructions executed: 5047570963
+    Number of instructions executed: 5050451278
+
+1 core trigonométrico
+    Number of instructions executed: 3512378469
+
+2 cores trigonométrico
+    Number of instructions executed: 1779157247
+    Number of instructions executed: 1779793288
+
+4 cores trigonométrico
+    Number of instructions executed: 892533923
+    Number of instructions executed: 894710876
+    Number of instructions executed: 894422048
+    Number of instructions executed: 893458859
+
+8 cores trigonométrico
+    Number of instructions executed: 471966254
+    Number of instructions executed: 472419486
+    Number of instructions executed: 465647882
+    Number of instructions executed: 466060964
+    Number of instructions executed: 465670272
+    Number of instructions executed: 466608821
+    Number of instructions executed: 473270666
+    Number of instructions executed: 472004929
+
+1 core aritmético
+    Number of instructions executed: 34811910474
+
+2 cores aritmético
+    Number of instructions executed: 17591969525
+    Number of instructions executed: 17705012016
+
+4 cores aritmético
+    Number of instructions executed: 8799324536
+    Number of instructions executed: 8802602248
+    Number of instructions executed: 8807955933
+    Number of instructions executed: 8907013491
+
+8 cores aritmético
+    Number of instructions executed: 4730302007
+    Number of instructions executed: 4814389305
+    Number of instructions executed: 4592375352
+    Number of instructions executed: 4597730343
+    Number of instructions executed: 4614426076
+    Number of instructions executed: 4594647796
+    Number of instructions executed: 4730993739
+    Number of instructions executed: 4729239099
+
+1 core dupla aceleração
+    Number of instructions executed: 1299709291
+
+2 cores dupla aceleração
+    Number of instructions executed: 710608386
+    Number of instructions executed: 711097476
+
+4 cores dupla aceleração
+    Number of instructions executed: 356281969
+    Number of instructions executed: 356769997
+    Number of instructions executed: 356769861
+    Number of instructions executed: 356771296
+
+8 cores dupla aceleração
+    Number of instructions executed: 192046345
+    Number of instructions executed: 192535652
+    Number of instructions executed: 186687134
+    Number of instructions executed: 186687171
+    Number of instructions executed: 186687293
+    Number of instructions executed: 186687137
+    Number of instructions executed: 192534374
+    Number of instructions executed: 192534470
