@@ -22,7 +22,7 @@ Serão implementados periféricos que realizam operações de ponto flutuante e 
 
 ### Experimentos
 
-Serão utilizadas as seguintes configurações para realização dos testes, rodando com imagens de tamanhos diferentes como entrada no código:
+Serão utilizadas as seguintes configurações para realização dos testes, rodando com imagens de tamanho 100x100 como entrada no código:
 
 + Single Core sem aceleração
 + Single Core com aceleração
