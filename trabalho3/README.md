@@ -1,5 +1,7 @@
 # Projeto 3
 
+Este é o roteiro do projeto. O relatório está no outro arquivo markdown.
+
 ## Grupo 4:
 
 |           Nome           |   RA   |
