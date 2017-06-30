@@ -5,7 +5,7 @@
 #include <math.h>
 #include <float.h>
 
-//#define TRIG_ACELERATION
+#define TRIG_ACELERATION
 #define FLOAT_ACELERATION
 #define FLOAT_ACELERATION2
 
